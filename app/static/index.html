@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>神牛 X3 Pro 桌面控制台</title>
+  <style>
+    :root {
+      --bg-main: #0d0f12;
+      --bg-surface: #15181f;
+      --bg-card: #1b1f28;
+      --border-subtle: #272c38;
+      --border-focus: #3d4556;
+      --text-main: #f0f3f6;
+      --text-muted: #8b949e;
+      --text-dim: #5c6370;
+      --accent-godox: #e58e26;
+      --accent-godox-hover: #fa983a;
+      --accent-green: #2ecc71;
+      --accent-red: #e74c3c;
+      --font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 1140px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 20px;
+    }
+    .title-area h1 {
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-tag {
+      background: var(--accent-godox);
+      color: #000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      font-size: 13px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #7f8c8d;
+    }
+    .status-dot.connected { background: var(--accent-green); box-shadow: 0 0 8px rgba(46, 204, 113, 0.5); }
+    .btn {
+      background: #252b37;
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: #303746; border-color: var(--border-focus); }
+    .btn-primary { background: var(--accent-godox); color: #000; border-color: var(--accent-godox); font-weight: 600; }
+    .btn-primary:hover { background: var(--accent-godox-hover); }
+    .btn-danger { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
+    .btn-danger:hover { background: #991b1b; }
+    .btn-active { background: #3b4252; border-color: var(--accent-godox); color: #fff; }
+
+    /* Studio Control Toolbar */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+    }
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .toolbar-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .channel-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 2px 4px;
+    }
+    .channel-val {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-godox);
+      padding: 0 10px;
+    }
+    .mini-btn {
+      background: #252b37;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .mini-btn:hover { background: #323948; }
+
+    .seg-control {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 2px;
+    }
+    .seg-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .seg-btn.active {
+      background: #2d3340;
+      color: var(--text-main);
+    }
+
+    /* Action Row */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .test-fire-btn {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(192, 57, 43, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s;
+    }
+    .test-fire-btn:hover { background: #e74c3c; transform: translateY(-1px); }
+    .test-fire-btn:active { transform: translateY(1px); }
+
+    .action-feedback {
+      display: none;
+      width: 100%;
+      margin: -8px 0 20px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .action-feedback.show { display: block; }
+    .action-feedback.working { border-color: var(--accent-godox); color: var(--accent-godox); }
+    .action-feedback.success { border-color: var(--accent-green); color: var(--accent-green); }
+    .action-feedback.error { border-color: var(--accent-red); color: #ff9b91; }
+
+    .group-nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .tab-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { background: #222733; color: var(--text-main); }
+    .tab-btn.active {
+      background: #29303d;
+      border-color: var(--accent-godox);
+      color: var(--accent-godox);
+    }
+    .add-group-btn {
+      background: #1f242e;
+      border: 1px dashed #3d4556;
+      color: var(--accent-godox);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .add-group-btn:hover { background: #2b3240; border-color: var(--accent-godox); }
+
+    .all-adjust-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #191c24;
+      border: 1px solid #2b303d;
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .all-adjust-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .groups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .group-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .group-card.active-card {
+      border-color: #3f4758;
+    }
+    .group-card.off {
+      opacity: 0.55;
+      border-color: #20242e;
+    }
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .group-badge {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-godox);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .remove-group-btn {
+      color: var(--text-dim);
+      background: transparent;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .remove-group-btn:hover { color: var(--accent-red); background: rgba(231, 76, 60, 0.1); }
+
+    .power-display-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 14px 0 10px 0;
+    }
+    .power-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .power-val-box {
+      text-align: right;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px dashed transparent;
+      transition: all 0.15s;
+    }
+    .power-val-box:hover {
+      background: #252b37;
+      border-color: #3e485e;
+    }
+    .power-val-main {
+      font-size: 42px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: #fff;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .power-val-sub {
+      font-size: 13px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .power-input {
+      font-size: 34px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--accent-godox);
+      background: #101217;
+      border: 1px solid var(--accent-godox);
+      border-radius: 6px;
+      width: 140px;
+      text-align: right;
+      padding: 2px 8px;
+      outline: none;
+    }
+    .group-card.off .power-val-main {
+      color: var(--text-dim);
+    }
+
+    .stepper-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .stepper-btn {
+      background: #252b37;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .stepper-btn:hover { background: #323948; border-color: var(--border-focus); }
+    .stepper-btn:active { background: #1c212a; }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    input[type=range] {
+      flex: 1;
+      height: 8px;
+      -webkit-appearance: none;
+      background: #252b37;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent-godox);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .group-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 14px;
+      border-top: 1px solid #252b37;
+      font-size: 13px;
+    }
+    .toggle-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #212631;
+      border: 1px solid var(--border-subtle);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .toggle-chip.active {
+      background: #2a3242;
+      color: var(--accent-godox);
+      border-color: #3e485e;
+    }
+
+    /* Device Scanner Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #1c212a;
+      border: 1px solid var(--border-focus);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 480px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-title { font-size: 17px; font-weight: 600; }
+    .device-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 18px;
+    }
+    .device-item {
+      background: #242a36;
+      border: 1px solid var(--border-subtle);
+      padding: 12px 14px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .device-item:hover {
+      background: #2e3544;
+      border-color: var(--accent-godox);
+    }
+    .device-item.current {
+      border-color: var(--accent-green);
+    }
+
+    .notice-bar {
+      font-size: 13px;
+      color: var(--text-muted);
+      background: #14171d;
+      border-left: 3px solid var(--accent-godox);
+      padding: 10px 16px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 24px;
+    }
+
+    footer {
+      margin-top: auto;
+      padding-top: 24px;
+      font-size: 12px;
+      color: #6e7681;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-area">
+        <h1>
+          <span class="brand-tag">GODOX</span>
+          X3 Pro 桌面控制台
+          <span class="subtitle">Capture One 联机工位远程控制</span>
+        </h1>
+      </div>
+      <div class="status-bar">
+        <div class="status-pill">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">正在初始化...</span>
+        </div>
+        <button class="btn" onclick="openDeviceModal()">🔄 切换引闪器</button>
+        <button class="btn" id="connectBtn" onclick="toggleConnect()">连接引闪器</button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">无线频道 (CH)</span>
+        <div class="channel-box">
+          <button class="mini-btn" onclick="stepChannel(-1)">-</button>
+          <span class="channel-val" id="channelDisplay">CH 06</span>
+          <button class="mini-btn" onclick="stepChannel(1)">+</button>
+        </div>
+      </div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label">功率显示格式</span>
+        <div class="seg-control">
+          <button class="seg-btn" id="modeDual" onclick="setDisplayMode('dual')">双显 (1/32 · 5.0)</button>
+          <button class="seg-btn" id="modeFraction" onclick="setDisplayMode('fraction')">分母 (1/32)</button>
+          <button class="seg-btn" id="modeDecimal" onclick="setDisplayMode('decimal')">数字 (5.0)</button>
+        </div>
+      </div>
+
+      <div class="toolbar-group">
+        <button class="btn" id="globalLampBtn" onclick="toggleGlobalLamp()">💡 一键全开造型灯: 关</button>
+        <button class="btn" id="globalSoundBtn" onclick="toggleGlobalSound()">🔔 全局蜂鸣音: 开</button>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <div class="group-nav-tabs" id="groupTabsContainer">
+        <!-- Injected by JS -->
+      </div>
+
+      <form id="syncForm" method="POST" action="/api/sync_to_device_form" style="display:inline-block">
+        <button type="submit" class="btn" id="btnSyncDevice" title="把桌面当前全部灯位配置整体写入实体引闪器（接管控制权）">⇓ 一键同步到引闪器</button>
+      </form>
+      <form id="offForm" method="POST" action="/api/all_off_form" style="display:inline-block; margin-left:12px">
+        <button type="submit" class="btn btn-danger" id="btnAllOff" title="关闭所有组别的闪光输出（功率设置保留，可再开回）">⏻ 一键全局 OFF</button>
+      </form>
+      <button class="test-fire-btn" id="btnTestFire" style="margin-left:12px">
+        ⚡ 立即试闪 (TEST FIRE)
+      </button>
+    </div>
+
+    <div id="actionFeedback" class="action-feedback" role="status" aria-live="polite"></div>
+
+    <div class="all-adjust-bar" id="allAdjustBar">
+      <span><strong>全组快速联动调光</strong>（统一提升或压暗全场已开灯组）：</span>
+      <div class="all-adjust-btns">
+        <button class="btn" onclick="adjustAll(-10)">⬇ -1.0 档</button>
+        <button class="btn" onclick="adjustAll(-3)">⬇ -1/3 档</button>
+        <button class="btn" onclick="adjustAll(-1)">⬇ -0.1 档</button>
+        <button class="btn" onclick="adjustAll(1)">⬆ +0.1 档</button>
+        <button class="btn" onclick="adjustAll(3)">⬆ +1/3 档</button>
+        <button class="btn" onclick="adjustAll(10)">⬆ +1.0 档</button>
+      </div>
+    </div>
+
+    <div class="groups-grid" id="groupsContainer">
+    </div>
+
+    <div class="notice-bar">
+      <strong>同步模型说明（实测结论）</strong>：X3 Pro 蓝牙是<strong>单向命令通道</strong>（与官方 App 同机制），实体端不回传状态——桌面上显示的数值以「本机记忆」为准，连接后不会覆盖你的实体设置；你在桌面做的任何调整会立即写入实体。如需以桌面配置整体接管实体，点「⇓ 一键同步到引闪器」。
+    </div>
+
+    <footer>
+      神牛 X3 Pro / XPro II / X2T 桌面控制台 · 原生菜单栏应用已编译 · 支持多机共享与 Capture One 联动
+    </footer>
+  </div>
+
+  <!-- Device Modal -->
+  <div class="modal-overlay" id="deviceModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">发现附近的神牛引闪器</div>
+        <button class="remove-group-btn" onclick="closeDeviceModal()">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        请在各自引闪器菜单开启蓝牙（显示名称对应屏幕左下角 MAC 后 4 位）：
+      </p>
+      <div class="device-list" id="deviceList">
+        <div style="font-size: 13px; color: var(--text-dim); text-align: center; padding: 20px;">正在扫描...</div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn" onclick="rescanDevices()">重新扫描</button>
+        <button class="btn" onclick="closeDeviceModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Group Modal -->
+  <div class="modal-overlay" id="addGroupModal">
+    <div class="modal-content" style="max-width: 380px;">
+      <div class="modal-header">
+        <div class="modal-title">添加控制组别</div>
+        <button class="remove-group-btn" onclick="closeAddGroupModal()">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">选择要添加到面板的组别（英文字母 A-F 或 数字 0-9）：</p>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px;" id="availableGroupsGrid">
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn" onclick="closeAddGroupModal()">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let appState = {
+      connected: false,
+      device_name: "未连接",
+      device_address: null,
+      channel: 6,
+      global_lamp: false,
+      global_sound: true,
+      power_display_mode: "dual",
+      active_group: "ALL",
+      visible_groups: ["A", "B", "C", "D", "E"],
+      all_available_groups: ["A", "B", "C", "D", "E", "F", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      groups: {},
+      power_table: [],
+      discovered_devices: []
+    };
+
+    let debounceTimers = {};
+    let editingGroup = null;
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        appState.connected = data.connected;
+        appState.device_name = data.device_name;
+        appState.device_address = data.device_address;
+        appState.channel = data.channel || 6;
+        appState.global_lamp = data.global_lamp || false;
+        appState.global_sound = data.global_sound || false;
+        if (data.power_display_mode) appState.power_display_mode = data.power_display_mode;
+        if (data.visible_groups) appState.visible_groups = data.visible_groups;
+        if (data.all_available_groups) appState.all_available_groups = data.all_available_groups;
+        if (data.groups) appState.groups = data.groups;
+        if (data.power_table) appState.power_table = data.power_table;
+        updateUI();
+      } catch (e) {
+        console.error("fetchStatus error", e);
+      }
+    }
+
+    function updateUI() {
+      const dot = document.getElementById("statusDot");
+      const txt = document.getElementById("statusText");
+      const btn = document.getElementById("connectBtn");
+      if (appState.connected) {
+        dot.className = "status-dot connected";
+        txt.textContent = appState.device_name + " (已直连)";
+        btn.textContent = "断开连接";
+        btn.className = "btn btn-danger";
+      } else {
+        dot.className = "status-dot";
+        txt.textContent = appState.device_name ? `离线 (${appState.device_name})` : "未连接";
+        btn.textContent = "连接引闪器";
+        btn.className = "btn btn-primary";
+      }
+
+      document.getElementById("channelDisplay").textContent = `CH ${String(appState.channel).padStart(2, '0')}`;
+
+      document.getElementById("modeDual").className = "seg-btn " + (appState.power_display_mode === 'dual' ? 'active' : '');
+      document.getElementById("modeFraction").className = "seg-btn " + (appState.power_display_mode === 'fraction' ? 'active' : '');
+      document.getElementById("modeDecimal").className = "seg-btn " + (appState.power_display_mode === 'decimal' ? 'active' : '');
+
+      const lampBtn = document.getElementById("globalLampBtn");
+      lampBtn.textContent = appState.global_lamp ? "💡 一键全开造型灯: 开" : "💡 一键全开造型灯: 关";
+      lampBtn.className = "btn " + (appState.global_lamp ? "btn-active" : "");
+
+      const soundBtn = document.getElementById("globalSoundBtn");
+      soundBtn.textContent = appState.global_sound ? "🔔 全局蜂鸣音: 开" : "🔔 全局蜂鸣音: 关";
+      soundBtn.className = "btn " + (appState.global_sound ? "btn-active" : "");
+
+      renderTabs();
+      document.getElementById("allAdjustBar").style.display = (appState.active_group === "ALL" ? "flex" : "none");
+
+      renderGroups();
+    }
+
+    function renderTabs() {
+      const tabsContainer = document.getElementById("groupTabsContainer");
+      tabsContainer.innerHTML = "";
+
+      const allBtn = document.createElement("button");
+      allBtn.className = "tab-btn " + (appState.active_group === "ALL" ? "active" : "");
+      allBtn.textContent = "全部组别 (ALL)";
+      allBtn.onclick = () => selectTab("ALL");
+      tabsContainer.appendChild(allBtn);
+
+      appState.visible_groups.forEach(g => {
+        const btn = document.createElement("button");
+        btn.className = "tab-btn " + (appState.active_group === g ? "active" : "");
+        btn.textContent = `${g} 组`;
+        btn.onclick = () => selectTab(g);
+        tabsContainer.appendChild(btn);
+      });
+
+      const addBtn = document.createElement("button");
+      addBtn.className = "add-group-btn";
+      addBtn.textContent = "➕ 添加组别";
+      addBtn.onclick = openAddGroupModal;
+      tabsContainer.appendChild(addBtn);
+    }
+
+    function renderGroups() {
+      if (editingGroup) return;
+      const container = document.getElementById("groupsContainer");
+      container.innerHTML = "";
+
+      const groupsToRender = appState.active_group === "ALL" ? appState.visible_groups : [appState.active_group];
+
+      groupsToRender.forEach(g => {
+        const grp = appState.groups[g] || { mode: "M", power: "1/64", decimal_power: "4.0", dec_val: 40, sound: false, lamp: false };
+        const isOff = grp.mode === "OFF";
+        const isTtl = grp.mode === "TTL";
+
+        let mainText = grp.power;
+        let subText = `数字值: ${grp.decimal_power}`;
+
+        if (appState.power_display_mode === "decimal") {
+          mainText = grp.decimal_power;
+          subText = `分母值: ${grp.power} (点击输入)`;
+        } else if (appState.power_display_mode === "fraction") {
+          mainText = grp.power;
+          subText = "点击数值可直接键入";
+        } else {
+          mainText = grp.power;
+          subText = `数字: ${grp.decimal_power} (点击直接键入)`;
+        }
+
+        if (isOff) {
+          mainText = "OFF";
+          subText = "组别已休眠 / 禁用";
+        } else if (isTtl) {
+          mainText = "TTL";
+          subText = "相机自动测光输出";
+        }
+
+        const sliderVal = grp.dec_val || 40;
+
+        let stepperHtml = "";
+        if (appState.power_display_mode === "decimal") {
+          stepperHtml = `
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', -10)" title="-1.0 档">-1.0</button>
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', -1)" title="-0.1 档">-0.1</button>
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', 1)" title="+0.1 档">+0.1</button>
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', 10)" title="+1.0 档">+1.0</button>
+          `;
+        } else {
+          stepperHtml = `
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', -10)" title="-1.0 档">-1.0 档</button>
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', -3)" title="-1/3 档">-1/3 档</button>
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', 1)" title="+0.1 档">+0.1 档</button>
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', 3)" title="+1/3 档">+1/3 档</button>
+            <button class="stepper-btn" onclick="stepGroupDec('${g}', 10)" title="+1.0 档">+1.0 档</button>
+          `;
+        }
+
+        const card = document.createElement("div");
+        card.className = "group-card" + (isOff ? " off" : " active-card");
+        card.innerHTML = `
+          <div class="group-header">
+            <div class="group-badge">
+              <span>${g} 组</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="seg-control">
+                <button class="seg-btn ${grp.mode === 'M' ? 'active' : ''}" onclick="setGroupMode('${g}', 'M')">M</button>
+                <button class="seg-btn ${grp.mode === 'TTL' ? 'active' : ''}" onclick="setGroupMode('${g}', 'TTL')">TTL</button>
+                <button class="seg-btn ${grp.mode === 'OFF' ? 'active' : ''}" onclick="setGroupMode('${g}', 'OFF')">OFF</button>
+              </div>
+              <button class="remove-group-btn" onclick="removeGroup('${g}')" title="从面板中隐藏该组">✕</button>
+            </div>
+          </div>
+
+          <div class="power-display-row">
+            <div class="power-label">${isTtl ? 'TTL 模式' : '输出功率'}</div>
+            <div class="power-val-box" id="powerBox_${g}" onclick="enablePowerInput('${g}')" title="点击直接键盘键入功率数值">
+              <div class="power-val-main" id="powerValMain_${g}">${mainText}</div>
+              ${subText ? `<div class="power-val-sub">${subText}</div>` : ''}
+            </div>
+          </div>
+
+          <div style="${isOff || isTtl ? 'opacity: 0.25; pointer-events: none;' : ''}">
+            <div class="stepper-row">
+              ${stepperHtml}
+            </div>
+
+            <div class="slider-row">
+              <input type="range" min="10" max="100" step="1" value="${sliderVal}"
+                     oninput="onSliderChange('${g}', this.value)">
+            </div>
+          </div>
+
+          <div class="group-footer">
+            <div class="toggle-chip ${grp.lamp ? 'active' : ''}" onclick="toggleGroupLamp('${g}')">
+              💡 造型灯: ${grp.lamp ? '开启' : '关闭'}
+            </div>
+            <div class="toggle-chip ${grp.sound ? 'active' : ''}" onclick="toggleGroupSound('${g}')">
+              🔔 回电音: ${grp.sound ? '开启' : '关闭'}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function enablePowerInput(g) {
+      const grp = appState.groups[g];
+      if (grp.mode === "OFF" || grp.mode === "TTL") return;
+      editingGroup = g;
+      const box = document.getElementById("powerBox_" + g);
+      const currentText = appState.power_display_mode === "decimal" ? grp.decimal_power : grp.power;
+      box.innerHTML = `
+        <input type="text" class="power-input" id="input_${g}" value="${currentText}"
+               onkeydown="handleInputKey(event, '${g}')" onblur="commitPowerInput('${g}')">
+        <div class="power-val-sub">按回车确认</div>
+      `;
+      const input = document.getElementById("input_" + g);
+      input.focus();
+      input.select();
+    }
+
+    function handleInputKey(e, g) {
+      if (e.key === "Enter") {
+        commitPowerInput(g);
+      } else if (e.key === "Escape") {
+        editingGroup = null;
+        renderGroups();
+      }
+    }
+
+    function commitPowerInput(g) {
+      if (!editingGroup) return;
+      const input = document.getElementById("input_" + g);
+      if (!input) return;
+      const val = input.value.trim();
+      editingGroup = null;
+
+      let parsedDec = null;
+      if (/^\d+(\.\d+)?$/.test(val)) {
+        const f = parseFloat(val);
+        if (f >= 1.0 && f <= 10.0) {
+          parsedDec = Math.round(f * 10);
+        }
+      } else if (val.startsWith("1/")) {
+        for (const item of appState.power_table) {
+          if (item.fraction.toLowerCase() === val.toLowerCase()) {
+            parsedDec = item.dec_val;
+            break;
+          }
+        }
+      }
+
+      if (parsedDec !== null) {
+        appState.groups[g].dec_val = parsedDec;
+        appState.groups[g].decimal_power = (parsedDec / 10.0).toFixed(1);
+        sendGroupUpdate(g, parsedDec);
+      }
+      renderGroups();
+    }
+
+    function selectTab(tab) {
+      appState.active_group = tab;
+      updateUI();
+    }
+
+    async function setDisplayMode(mode) {
+      appState.power_display_mode = mode;
+      await fetch('/api/set_display_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode })
+      });
+      updateUI();
+    }
+
+    async function stepChannel(delta) {
+      let newCh = Math.max(1, Math.min(32, appState.channel + delta));
+      appState.channel = newCh;
+      document.getElementById("channelDisplay").textContent = `CH ${String(newCh).padStart(2, '0')}`;
+      await fetch('/api/set_channel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: newCh })
+      });
+    }
+
+    async function toggleGlobalLamp() {
+      appState.global_lamp = !appState.global_lamp;
+      updateUI();
+      await fetch('/api/set_global_lamp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lamp_on: appState.global_lamp })
+      });
+    }
+
+    async function toggleGlobalSound() {
+      appState.global_sound = !appState.global_sound;
+      updateUI();
+      await fetch('/api/set_global_sound', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sound_on: appState.global_sound })
+      });
+    }
+
+    async function adjustAll(delta) {
+      await fetch('/api/adjust_all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delta })
+      });
+      fetchStatus();
+    }
+
+    function setGroupMode(g, mode) {
+      appState.groups[g].mode = mode;
+      renderGroups();
+      sendGroupUpdate(g);
+    }
+
+    function toggleGroupLamp(g) {
+      appState.groups[g].lamp = !appState.groups[g].lamp;
+      renderGroups();
+      sendGroupUpdate(g);
+    }
+
+    function toggleGroupSound(g) {
+      appState.groups[g].sound = !appState.groups[g].sound;
+      renderGroups();
+      sendGroupUpdate(g);
+    }
+
+    function onSliderChange(g, val) {
+      const dec_val = parseInt(val);
+      appState.groups[g].dec_val = dec_val;
+      appState.groups[g].decimal_power = (dec_val / 10.0).toFixed(1);
+      renderGroups();
+
+      if (debounceTimers[g]) clearTimeout(debounceTimers[g]);
+      debounceTimers[g] = setTimeout(() => {
+        sendGroupUpdate(g, dec_val);
+      }, 60);
+    }
+
+    function stepGroupDec(g, delta) {
+      const current = appState.groups[g].dec_val || 40;
+      const nextVal = Math.max(10, Math.min(100, current + delta));
+      appState.groups[g].dec_val = nextVal;
+      appState.groups[g].decimal_power = (nextVal / 10.0).toFixed(1);
+      renderGroups();
+      sendGroupUpdate(g, nextVal);
+    }
+
+    async function sendGroupUpdate(g, customDecVal = null) {
+      const grp = appState.groups[g];
+      const dec = customDecVal !== null ? customDecVal : grp.dec_val;
+      try {
+        await fetch('/api/set_group', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            group: g,
+            mode: grp.mode,
+            dec_val: dec,
+            sound: grp.sound,
+            lamp: grp.lamp
+          })
+        });
+      } catch (e) {
+        console.error("sendGroupUpdate error", e);
+      }
+    }
+
+    async function addGroup(g) {
+      await fetch('/api/add_group', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group: g })
+      });
+      closeAddGroupModal();
+      fetchStatus();
+    }
+
+    async function removeGroup(g) {
+      if (appState.visible_groups.length <= 1) {
+        alert("至少需要保留一个组别");
+        return;
+      }
+      await fetch('/api/remove_group', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group: g })
+      });
+      fetchStatus();
+    }
+
+    function openAddGroupModal() {
+      const grid = document.getElementById("availableGroupsGrid");
+      grid.innerHTML = "";
+      appState.all_available_groups.forEach(g => {
+        const isAlreadyVisible = appState.visible_groups.includes(g);
+        const btn = document.createElement("button");
+        btn.className = "btn " + (isAlreadyVisible ? "btn-active" : "btn-primary");
+        btn.textContent = `${g} 组`;
+        btn.disabled = isAlreadyVisible;
+        btn.onclick = () => addGroup(g);
+        grid.appendChild(btn);
+      });
+      document.getElementById("addGroupModal").style.display = "flex";
+    }
+
+    function closeAddGroupModal() {
+      document.getElementById("addGroupModal").style.display = "none";
+    }
+
+    // Device modal
+    async function openDeviceModal() {
+      document.getElementById("deviceModal").style.display = "flex";
+      rescanDevices();
+    }
+
+    function closeDeviceModal() {
+      document.getElementById("deviceModal").style.display = "none";
+    }
+
+    async function rescanDevices() {
+      const list = document.getElementById("deviceList");
+      list.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">正在扫描附近神牛引闪器...</div>';
+      try {
+        const res = await fetch('/api/scan_devices', { method: 'POST' });
+        const data = await res.json();
+        const devs = data.devices || [];
+        list.innerHTML = "";
+        if (devs.length === 0) {
+          list.innerHTML = '<div style="font-size: 13px; color: var(--text-dim); text-align: center; padding: 20px;">未扫描到设备，请确认引闪器屏幕蓝牙已开启</div>';
+          return;
+        }
+        devs.forEach(d => {
+          const item = document.createElement("div");
+          item.className = "device-item" + (d.is_current ? " current" : "");
+          item.innerHTML = `
+            <div>
+              <div style="font-weight: 600; color: #fff;">${d.name}</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">${d.address}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size: 12px; color: var(--text-muted);">${d.rssi ? d.rssi + ' dBm' : ''}</span>
+              <button class="btn ${d.is_current ? 'btn-danger' : 'btn-primary'}" onclick="connectSpecificDevice('${d.address}')">
+                ${d.is_current ? '当前连接' : '连接此设备'}
+              </button>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      } catch (e) {
+        list.innerHTML = '<div style="font-size: 13px; color: var(--accent-red); text-align: center; padding: 20px;">扫描失败</div>';
+      }
+    }
+
+    async function connectSpecificDevice(addr) {
+      closeDeviceModal();
+      document.getElementById("statusText").textContent = "正在连接所选引闪器...";
+      await fetch('/api/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: addr })
+      });
+      fetchStatus();
+    }
+
+    async function toggleConnect() {
+      if (appState.connected) {
+        await fetch('/api/disconnect', { method: 'POST' });
+      } else {
+        document.getElementById("statusText").textContent = "正在连接...";
+        await fetch('/api/connect', { method: 'POST' });
+      }
+      fetchStatus();
+    }
+
+    async function testFire() {
+      try {
+        const btn = document.querySelector(".test-fire-btn");
+        btn.style.opacity = "0.7";
+        await fetch('/api/test_fire', { method: 'POST' });
+        setTimeout(() => { btn.style.opacity = "1"; }, 300);
+      } catch (e) {
+        console.error("test fire error", e);
+      }
+    }
+
+    function flashStatus(msg, ms) {
+      if (!ms) ms = 3000;
+      var el = document.getElementById("statusText");
+      var old = el.innerText;
+      el.innerText = msg;
+      clearTimeout(window.__flashT);
+      window.__flashT = setTimeout(function () {
+        el.innerText = old;
+        fetchStatus();
+      }, ms);
+    }
+
+    function showActionFeedback(msg, tone, ms) {
+      var el = document.getElementById("actionFeedback");
+      el.textContent = msg;
+      el.className = "action-feedback show " + (tone || "working");
+      clearTimeout(window.__actionFeedbackT);
+      if (ms) {
+        window.__actionFeedbackT = setTimeout(function () {
+          el.className = "action-feedback";
+          el.textContent = "";
+        }, ms);
+      }
+    }
+
+    async function allOff() {
+      var btn = Array.from(document.querySelectorAll("button")).find(function (b) { return b.innerText.indexOf("全局 OFF") >= 0; });
+      var oldText = "";
+      if (btn) { oldText = btn.innerText; btn.innerText = "⏳ 处理中..."; btn.disabled = true; }
+      try {
+        var r = await fetch("/api/all_off", { method: "POST" });
+        var j = await r.json();
+        if (j.success) {
+          flashStatus("✓ 所有组别已设为 OFF（功率已保留）");
+        } else {
+          flashStatus("× 全局 OFF 失败：" + (j.message || "未知错误"), 5000);
+        }
+      } catch (e) {
+        flashStatus("× 网络异常：" + e.message, 5000);
+      } finally {
+        if (btn) { btn.innerText = oldText || "⏻ 一键全局 OFF"; btn.disabled = false; }
+        fetchStatus();
+      }
+    }
+
+    async function syncToDevice() {
+      var btn = Array.from(document.querySelectorAll("button")).find(function (b) { return b.innerText.indexOf("一键同步") >= 0; });
+      var oldText = "";
+      if (btn) { oldText = btn.innerText; btn.innerText = "⏳ 同步中..."; btn.disabled = true; }
+      try {
+        var r = await fetch("/api/sync_to_device", { method: "POST" });
+        var j = await r.json();
+        if (j.success) {
+          flashStatus("✓ 桌面配置已写入实体引闪器（A~E 按桌面设置生效）");
+        } else {
+          flashStatus("× 同步失败：" + (j.message || "未知错误"), 5000);
+        }
+      } catch (e) {
+        flashStatus("× 网络异常：" + e.message, 5000);
+      } finally {
+        if (btn) { btn.innerText = oldText || "↩ 一键同步到引闪器"; btn.disabled = false; }
+        fetchStatus();
+      }
+    }
+
+    async function resetAll() {
+      if (!confirm("确定将所有组别重置为安全初态 (1/128 M) 吗？")) return;
+      await fetch('/api/reset_all', { method: 'POST' });
+      fetchStatus();
+    }
+
+    fetchStatus();
+    setInterval(fetchStatus, 3000);
+
+    // form submit handler：拦截默认行为走 fetch 流程（无页面跳转），同时给按钮加 loading 态
+    function onSyncFormSubmit(e) {
+      e.preventDefault();
+      var btn = document.getElementById('btnSyncDevice');
+      var oldText = btn.innerText;
+      btn.innerText = '⏳ 同步中...';
+      btn.disabled = true;
+      showActionFeedback('正在把桌面配置写入实体引闪器，请稍候…', 'working');
+      fetch('/api/sync_to_device', { method: 'POST' }).then(function (r) { return r.json(); }).then(function (j) {
+        var msg = j.success ? '✓ 同步完成：实体引闪器已接收桌面配置（A~E）' : '× 同步失败：请确认引闪器已连接后重试';
+        showActionFeedback(msg, j.success ? 'success' : 'error', j.success ? 8000 : 10000);
+        flashStatus(msg, 5000);
+      }).catch(function (e) {
+        var msg = '× 同步网络异常：' + e.message;
+        showActionFeedback(msg, 'error', 10000);
+        flashStatus(msg, 5000);
+      }).finally(function () {
+        btn.innerText = oldText;
+        btn.disabled = false;
+        fetchStatus();
+      });
+      return false;
+    }
+    function onOffFormSubmit(e) {
+      e.preventDefault();
+      var btn = document.getElementById('btnAllOff');
+      var oldText = btn.innerText;
+      btn.innerText = '⏳ 处理中...';
+      btn.disabled = true;
+      showActionFeedback('正在关闭所有组别的闪光输出…', 'working');
+      fetch('/api/all_off', { method: 'POST' }).then(function (r) { return r.json(); }).then(function (j) {
+        var msg = j.success ? '✓ 全局 OFF 完成：所有组别已关闭，功率设置已保留' : '× 全局 OFF 失败：请确认引闪器已连接后重试';
+        showActionFeedback(msg, j.success ? 'success' : 'error', j.success ? 8000 : 10000);
+        flashStatus(msg, 5000);
+      }).catch(function (e) {
+        var msg = '× 全局 OFF 网络异常：' + e.message;
+        showActionFeedback(msg, 'error', 10000);
+        flashStatus(msg, 5000);
+      }).finally(function () {
+        btn.innerText = oldText;
+        btn.disabled = false;
+        fetchStatus();
+      });
+      return false;
+    }
+
+    // 渐进增强：JS 正常时原地显示结果；若脚本加载失败，表单仍会原生 POST 到结果页。
+    document.getElementById('syncForm').addEventListener('submit', onSyncFormSubmit);
+    document.getElementById('offForm').addEventListener('submit', onOffFormSubmit);
+
+    // 试闪按钮（保持原 onclick 方式：fetch + flashStatus 反馈）
+    document.getElementById('btnTestFire').addEventListener('click', function () {
+      var btn = this;
+      var oldText = btn.innerText;
+      btn.innerText = '⏳ 试闪中...';
+      btn.disabled = true;
+      fetch('/api/test_fire', { method: 'POST' }).then(function () {
+        setTimeout(function () { btn.innerText = oldText; btn.disabled = false; }, 300);
+        flashStatus('⚡ 试闪指令已发送（请观察实体引闪器或棚内闪光）', 2000);
+      }).catch(function (e) {
+        flashStatus('× 试闪网络异常：' + e.message, 4000);
+        btn.innerText = oldText;
+        btn.disabled = false;
+      });
+    });
+  </script>
+</body>
+</html>

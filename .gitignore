@@ -1,0 +1,7 @@
+.venv/
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+GodoxController
+Godox Controller.app/
