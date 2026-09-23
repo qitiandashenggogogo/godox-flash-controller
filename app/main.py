@@ -163,12 +163,19 @@ async def all_off():
     success = await manager.all_off()
     return {"success": success, "status": manager.get_status()}
 
+@app.post("/api/toggle_all_off")
+async def toggle_all_off():
+    result = await manager.toggle_all_off()
+    return {**result, "status": manager.get_status()}
+
 @app.post("/api/all_off_form", response_class=HTMLResponse)
 async def all_off_form():
-    success = await manager.all_off()
+    result = await manager.toggle_all_off()
+    success = result["success"]
+    message = "✓ 已恢复关闭前的全部组别设置" if result["action"] == "restored" else "✓ 已全部 OFF，已保存恢复点"
     html = ("<!doctype html><meta charset=utf-8><title>OFF</title>"
              "<body style='font-family:system-ui;background:#0d0f12;color:#fff;padding:40px;text-align:center'>"
-             "<h2>" + ("✓ 已全部 OFF，功率已保留" if success else "× OFF 失败") + "</h2>"
+             "<h2>" + (message if success else "× 操作失败") + "</h2>"
              "<a href='/' style='color:#e58e26'>← 返回</a></body>")
     return HTMLResponse(html)
 

@@ -110,6 +110,8 @@ class BleManager:
         self._test_fire_lock = asyncio.Lock()
         self._test_fire_ack_event = asyncio.Event()
         self.last_test_fire_ack: Optional[str] = None
+        # 一键 OFF 的临时恢复点。它是持久化的，避免应用重启后无法恢复现场。
+        self.global_off_snapshot: Optional[Dict[str, Any]] = None
 
         self.discovered_devices: List[Dict[str, Any]] = []
 
@@ -168,6 +170,7 @@ class BleManager:
             "current_state": self._current_state(),
             "presets": copy.deepcopy(self.presets),
             "default_preset_id": self.default_preset_id,
+            "global_off_snapshot": copy.deepcopy(self.global_off_snapshot),
             "device": {"address": self.device_address, "name": self.device_name},
         }
 
@@ -185,6 +188,11 @@ class BleManager:
         self.default_preset_id = data.get("default_preset_id")
         if self.default_preset_id and not any(p["id"] == self.default_preset_id for p in self.presets):
             self.default_preset_id = None
+        raw_snapshot = data.get("global_off_snapshot")
+        if isinstance(raw_snapshot, dict) and isinstance(raw_snapshot.get("groups"), dict):
+            self.global_off_snapshot = copy.deepcopy(raw_snapshot)
+        else:
+            self.global_off_snapshot = None
 
     def load_state_from_disk(self):
         self.presets: List[Dict[str, Any]] = []
@@ -550,9 +558,16 @@ class BleManager:
         return success
 
     async def all_off(self) -> bool:
-        """一键全局 OFF：把所有可见组别设为 OFF（实体引闪器上所有组关闭闪光）"""
+        """保存当前组别状态后，把所有可见组别设为 OFF。"""
         if not self.is_connected or not self.client:
             return False
+        # 只在真正切入 OFF 前创建快照，避免连续调用时把全 OFF 状态覆盖掉。
+        if self.global_off_snapshot is None:
+            self.global_off_snapshot = {
+                "visible_groups": copy.deepcopy(self.visible_groups),
+                "groups": copy.deepcopy(self.groups),
+            }
+            self.save_state_to_disk()
         success = True
         for g in list(self.visible_groups):
             data = self.groups.get(g, {})
@@ -567,6 +582,47 @@ class BleManager:
                 success = False
             await asyncio.sleep(0.08)
         return success
+
+    async def restore_all_from_off(self) -> bool:
+        """把一键 OFF 前保存的各组模式、功率、蜂鸣与造型灯设置写回引闪器。"""
+        snapshot = self.global_off_snapshot
+        if not snapshot or not self.is_connected or not self.client:
+            return False
+
+        groups = snapshot.get("groups", {})
+        visible_groups = snapshot.get("visible_groups", self.visible_groups)
+        if not isinstance(groups, dict) or not isinstance(visible_groups, list):
+            return False
+
+        success = True
+        for g in visible_groups:
+            data = groups.get(g)
+            if not isinstance(data, dict):
+                continue
+            ok = await self.set_group(
+                group=g,
+                mode=data.get("mode", "M"),
+                dec_val=data.get("dec_val", 40),
+                sound=data.get("sound", False),
+                lamp=data.get("lamp", False),
+            )
+            if not ok:
+                success = False
+            await asyncio.sleep(0.08)
+
+        # 只有全部写回成功才丢弃恢复点；失败时保留它，让下一次点击继续恢复。
+        if success:
+            self.global_off_snapshot = None
+            self.save_state_to_disk()
+        return success
+
+    async def toggle_all_off(self) -> Dict[str, Any]:
+        """在“全部关闭”和“恢复关闭前状态”之间切换。"""
+        if self.global_off_snapshot is not None:
+            success = await self.restore_all_from_off()
+            return {"success": success, "action": "restored"}
+        success = await self.all_off()
+        return {"success": success, "action": "off"}
 
     async def sync_all_to_device(self) -> bool:
         """用户知情地一键接管：把桌面当前全部灯位配置整体写入实体引闪器"""
@@ -635,6 +691,7 @@ class BleManager:
             "discovered_devices": self.discovered_devices,
             "presets": self.list_presets(),
             "default_preset_id": self.default_preset_id,
+            "can_restore_all_off": self.global_off_snapshot is not None,
         }
 
 manager = BleManager()

@@ -624,7 +624,7 @@
         <button type="submit" class="btn" id="btnSyncDevice" title="把桌面当前全部灯位配置整体写入实体引闪器（接管控制权）">⇓ 一键同步到引闪器</button>
       </form>
       <form id="offForm" method="POST" action="/api/all_off_form" style="display:inline-block; margin-left:12px">
-        <button type="submit" class="btn btn-danger" id="btnAllOff" title="关闭所有组别的闪光输出（功率设置保留，可再开回）">⏻ 一键全局 OFF</button>
+        <button type="submit" class="btn btn-danger" id="btnAllOff" title="关闭所有组别的闪光输出；再次点击会恢复关闭前的状态">⏻ 一键全局 OFF</button>
       </form>
       <button class="test-fire-btn" id="btnTestFire" style="margin-left:12px">
         ⚡ 立即试闪 (TEST FIRE)
@@ -726,7 +726,8 @@
       power_table: [],
       discovered_devices: [],
       presets: [],
-      default_preset_id: null
+      default_preset_id: null,
+      can_restore_all_off: false
     };
 
     let debounceTimers = {};
@@ -750,6 +751,7 @@
         if (data.power_table) appState.power_table = data.power_table;
         if (data.presets) appState.presets = data.presets;
         appState.default_preset_id = data.default_preset_id || null;
+        appState.can_restore_all_off = Boolean(data.can_restore_all_off);
         updateUI();
       } catch (e) {
         console.error("fetchStatus error", e);
@@ -785,6 +787,17 @@
       const soundBtn = document.getElementById("globalSoundBtn");
       soundBtn.textContent = appState.global_sound ? "🔔 全局蜂鸣音: 开" : "🔔 全局蜂鸣音: 关";
       soundBtn.className = "btn " + (appState.global_sound ? "btn-active" : "");
+
+      const offBtn = document.getElementById("btnAllOff");
+      if (appState.can_restore_all_off) {
+        offBtn.textContent = "↻ 恢复全局 OFF 前状态";
+        offBtn.className = "btn btn-primary";
+        offBtn.title = "恢复第一次全局 OFF 前保存的各组模式、功率、蜂鸣与造型灯设置";
+      } else {
+        offBtn.textContent = "⏻ 一键全局 OFF";
+        offBtn.className = "btn btn-danger";
+        offBtn.title = "关闭所有组别的闪光输出；再次点击会恢复关闭前的状态";
+      }
 
       renderTabs();
       renderPresets();
@@ -1338,16 +1351,16 @@
     }
 
     async function allOff() {
-      var btn = Array.from(document.querySelectorAll("button")).find(function (b) { return b.innerText.indexOf("全局 OFF") >= 0; });
+      var btn = document.getElementById("btnAllOff");
       var oldText = "";
-      if (btn) { oldText = btn.innerText; btn.innerText = "⏳ 处理中..."; btn.disabled = true; }
+      if (btn) { oldText = btn.innerText; btn.innerText = appState.can_restore_all_off ? "⏳ 恢复中..." : "⏳ 关闭中..."; btn.disabled = true; }
       try {
-        var r = await fetch("/api/all_off", { method: "POST" });
+        var r = await fetch("/api/toggle_all_off", { method: "POST" });
         var j = await r.json();
         if (j.success) {
-          flashStatus("✓ 所有组别已设为 OFF（功率已保留）");
+          flashStatus(j.action === "restored" ? "✓ 已恢复全局 OFF 前的设置" : "✓ 所有组别已设为 OFF；再次点击可恢复");
         } else {
-          flashStatus("× 全局 OFF 失败：" + (j.message || "未知错误"), 5000);
+          flashStatus("× 操作失败：" + (j.message || "请确认引闪器已连接"), 5000);
         }
       } catch (e) {
         flashStatus("× 网络异常：" + e.message, 5000);
@@ -1413,11 +1426,14 @@
       e.preventDefault();
       var btn = document.getElementById('btnAllOff');
       var oldText = btn.innerText;
-      btn.innerText = '⏳ 处理中...';
+      var restoring = appState.can_restore_all_off;
+      btn.innerText = restoring ? '⏳ 恢复中...' : '⏳ 关闭中...';
       btn.disabled = true;
-      showActionFeedback('正在关闭所有组别的闪光输出…', 'working');
-      fetch('/api/all_off', { method: 'POST' }).then(function (r) { return r.json(); }).then(function (j) {
-        var msg = j.success ? '✓ 全局 OFF 完成：所有组别已关闭，功率设置已保留' : '× 全局 OFF 失败：请确认引闪器已连接后重试';
+      showActionFeedback(restoring ? '正在恢复全局 OFF 前保存的状态…' : '正在关闭所有组别的闪光输出，并保存恢复点…', 'working');
+      fetch('/api/toggle_all_off', { method: 'POST' }).then(function (r) { return r.json(); }).then(function (j) {
+        var msg = j.success
+          ? (j.action === 'restored' ? '✓ 已恢复全局 OFF 前的各组设置' : '✓ 全局 OFF 完成：再次点击可恢复关闭前的状态')
+          : '× 操作失败：请确认引闪器已连接后重试';
         showActionFeedback(msg, j.success ? 'success' : 'error', j.success ? 8000 : 10000);
         flashStatus(msg, 5000);
       }).catch(function (e) {
