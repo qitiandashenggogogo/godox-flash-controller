@@ -2,6 +2,12 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-23 cp -R 会把 iCloud 扩展属性带进 DMG，挂出来的包 codesign 验证直接失败
+
+- **问题描述**：用签名通过的 `.app` 跑 `build-dmg.sh` 打出 DMG，挂载验证时 `codesign --verify --deep --strict` 报 `resource fork, Finder information, or similar detritus not allowed`——源 App 明明验过是合格的。
+- **原因分析**：签名后的 App 挪回 iCloud 目录几分钟内就被 fpfs 回写 `com.apple.FinderInfo` / `com.apple.fileprovider.fpfs#P`（见前一条，这不影响已完成的签名本身）；但 `build-dmg.sh` 用 `cp -R` 拷进布局目录时这些属性**一并被复制**，而 codesign 的 verify 对「带未密封扩展属性的 bundle」一律拒验——属性跟着文件进了 DMG，坏包就这么流出去了。
+- **解决方案**：`build-dmg.sh` 在 `cp -R` 之后立刻 `xattr -cr` 布局目录里的副本（布局目录在 ${TMPDIR}、不走 iCloud，清一次就不会被回写），再进 hdiutil。**教训推广：凡是从 iCloud 目录拷已签名产物进分发包（DMG/ZIP），必须在暂存区重新 xattr -cr 并以挂载后的 codesign 验证为放行闸门。**
+
 ## 2026-09-23 iCloud Drive 会回写扩展属性，原地 xattr -cr 清不干净，签名必须挪到 /tmp 暂存
 
 - **问题描述**：`build-app.sh` 签名段明明有 `xattr -cr`，重打包时 codesign 仍报 `resource fork, Finder information, or similar detritus not allowed`；手动再清再签，过几分钟同样的错又出现，陷入死循环。

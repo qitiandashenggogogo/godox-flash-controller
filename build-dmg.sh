@@ -19,6 +19,12 @@ mkdir -p "$LAYOUT_DIR" "$DMG_STAGING"
 # 1) 把 .app 拷进布局目录
 cp -R "$APP_NAME" "$LAYOUT_DIR/$APP_NAME"
 
+# 1.5) 清掉拷过来的扩展属性。项目在 iCloud 同步目录里，fpfs 回写的
+# com.apple.fileprovider.fpfs#P / com.apple.FinderInfo 会被 cp -R 一并带进 DMG，
+# 导致挂载后 codesign --verify 报 "detritus not allowed"。
+# 布局目录在 ${TMPDIR}（不走 iCloud），这里清一次就干净、不会被回写。
+xattr -cr "$LAYOUT_DIR/$APP_NAME"
+
 # 2) 在布局目录建一个名为「Applications」的 symlink，指向系统 /Applications。
 # dmg 挂载后 Finder 会展示成一个可拖拽进去的快捷方式（蓝色 alias 图标）。
 ln -s /Applications "$LAYOUT_DIR/Applications"
