@@ -48,6 +48,8 @@ SIGN_IDENTITY="Godox Dev"
 APP="Godox Controller.app"
 if security find-identity -p codesigning 2>/dev/null | grep -q "$SIGN_IDENTITY"; then
     echo "使用证书 \"$SIGN_IDENTITY\" 从里到外签名（蓝牙授权跨构建保留）..."
+    # 先清扩展属性（FinderInfo/quarantine 等），否则 codesign 报 detritus not allowed
+    xattr -cr "$APP"
     if [ -d "$APP/Contents/Resources/backend" ]; then
         find "$APP/Contents/Resources/backend" \( -name "*.so" -o -name "*.dylib" \) \
             -exec codesign --force --sign "$SIGN_IDENTITY" {} +
