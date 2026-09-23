@@ -2,6 +2,24 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-23 codesign 报 "resource fork, Finder information, or similar detritus not allowed"，是扩展属性拦路
+
+- **问题描述**：自签证书从里到外签完所有动态库和可执行文件后，最后签整个 `.app` 时报 `resource fork, Finder information, or similar detritus not allowed`，签名失败。
+- **原因分析**：`.app` 根目录和 `Contents/Resources/backend/_internal/Python.framework` 上挂着 `com.apple.FinderInfo`、`com.apple.fileprovider.fpfs#P` 这类扩展属性（Finder 标记 / iCloud 占位），codesign 拒绝给带扩展属性的 bundle 签名。
+- **解决方案**：签名前必须 `xattr -cr "<App>.app"` 清干净（顽固的单条用 `xattr -d com.apple.FinderInfo <路径>` 定点删）。已固化进 `build-app.sh` 签名段第一行。验证：`codesign --verify --deep --strict` 通过才算数。
+
+## 2026-09-23 security find-identity -v 会把"未受信任"的自签证书过滤成假阴性
+
+- **问题描述**：openssl 自签的 "Godox Dev" 证书明明已导入钥匙串，`security find-identity -v -p codesigning` 却报 `0 valid identities found`，一度以为证书没法用。
+- **原因分析**：`-v`（valid only）会把信任链验证失败的证书直接排除；自签证书没有系统信任的根，标着 `(CSSMERR_TP_NOT_TRUSTED)` 就被滤掉了。但 codesign 签名并不要求证书被系统信任，只要求钥匙串里有 证书+私钥。
+- **解决方案**：查自签证书用 `security find-identity -p codesigning`（**不带 `-v`**），能看到带 `CSSMERR_TP_NOT_TRUSTED` 标记的条目就说明可用。签名后 `codesign -dv` 应显示 `Authority=<证书名>`。
+
+## 2026-09-23 OpenSSL 3.x 导出的 .p12 在 macOS 导入报 MAC verification failed
+
+- **问题描述**：`openssl pkcs12 -export` 生成的 .p12 用 `security import` 导入钥匙串时报 `MAC verification failed`。
+- **原因分析**：OpenSSL 3.x 默认改用 SHA256 MAC 等新算法，macOS 的 `security` 命令只认旧的 PKCS#12 算法族。
+- **解决方案**：导出时加 `-legacy` 参数（`openssl pkcs12 -export -legacy ...`），macOS 即可正常导入。
+
 ## 2026-09-23 adhoc 签名导致 macOS 蓝牙授权"点了允许也没反应"——每次重打包指纹变、旧授权全作废
 
 - **问题描述**：打包版 App 点「连接引闪器/切换引闪器」弹出系统蓝牙授权，点「允许」后无任何反应，扫描接口返回 500；系统设置「隐私与安全性→蓝牙」里攒了 5 个 Godox 条目且全部打开也没用。Intel 老 macOS 正常，macOS 26/27 都复现。
