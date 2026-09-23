@@ -58,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func isServerHealthy() -> Bool {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
-        p.arguments = ["--noproxy", "*", "-s", Self.localUrl + "api/health"]
+        p.arguments = ["--noproxy", "*", "--max-time", "1", "-s", Self.localUrl + "api/health"]
         let pipe = Pipe()
         p.standardOutput = pipe
         p.standardError = Pipe()
@@ -111,10 +111,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         self.window = win
         self.webView = wv
+        showLoadingPage()
+        loadConsoleWhenReady()
+    }
 
-        if let url = URL(string: Self.localUrl) {
-            wv.load(URLRequest(url: url))
+    func showLoadingPage() {
+        let html = """
+        <!doctype html><meta charset=\"utf-8\"><style>
+        body{margin:0;display:grid;place-items:center;height:100vh;background:#0d0f12;color:#f0f3f6;font-family:-apple-system,system-ui}
+        main{text-align:center}.spinner{width:26px;height:26px;border:3px solid #3d4556;border-top-color:#e58e26;border-radius:50%;margin:0 auto 16px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+        p{color:#8b949e;font-size:14px}</style><main><div class=\"spinner\"></div><strong>正在启动神牛控制台…</strong><p>正在连接本机服务</p></main>
+        """
+        webView?.loadHTMLString(html, baseURL: nil)
+    }
+
+    func loadConsoleWhenReady(attempt: Int = 0) {
+        if isServerHealthy(), let url = URL(string: Self.localUrl) {
+            webView?.load(URLRequest(url: url))
+            return
         }
+
+        // 打包版首次启动需要解包并初始化 BLE 运行时；在其完成前保留加载页，避免白屏。
+        if attempt < 60 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+                self?.loadConsoleWhenReady(attempt: attempt + 1)
+            }
+            return
+        }
+
+        let errorHtml = """
+        <!doctype html><meta charset=\"utf-8\"><style>body{margin:0;display:grid;place-items:center;height:100vh;background:#0d0f12;color:#f0f3f6;font-family:-apple-system,system-ui}main{text-align:center}button{margin-top:16px;padding:8px 14px;border:0;border-radius:6px;background:#e58e26;color:#000;font-weight:600}</style><main><strong>控制台服务尚未启动</strong><p>请稍候后在菜单栏选择“刷新控制面板”。</p></main>
+        """
+        webView?.loadHTMLString(errorHtml, baseURL: nil)
     }
 
     @objc func statusItemClicked(_ sender: NSStatusBarButton) {
@@ -200,7 +228,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     @objc func reloadAction() {
-        webView?.reload()
+        showLoadingPage()
+        loadConsoleWhenReady()
     }
 
     @objc func testFireAction() {
