@@ -2,6 +2,12 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-23 自签证书修复蓝牙授权已实测验证：扫描出设备、直连成功
+
+- **问题描述**：接上一条 adhoc 签名病——零成本的自签证书方案是否真能让 TCC 授权跨构建保留，需要实机验证。
+- **原因分析**：自签证书签名的 designated requirement 是 `identifier "com.godoxcontroller.desktop" and certificate leaf = H"ad45a7ec…"`，按证书指纹匹配、不随构建变化；TCC 授权一次永久有效。与 adhoc（按 cdhash，每构建一变）形成对照。
+- **解决方案**：做 "Godox Dev" 自签证书（`openssl` 生成 → 导入专用钥匙串 `~/Library/Keychains/godox-dev.keychain-db`，密码 `godox`）→ `build-app.sh` 里从里到外签名（动态库→后端→Swift 壳→整包，签前 `xattr -cr`）→ 装到 /Applications 实测：扫描返回真实设备 GDBH-E601、直连成功，BLE 全链路恢复。**注意边界：自签只能过本机 TCC，过不了 Gatekeeper——分发给别人仍需 Apple Developer ID + 公证（$99/年）。**
+
 ## 2026-09-23 codesign 报 "resource fork, Finder information, or similar detritus not allowed"，是扩展属性拦路
 
 - **问题描述**：自签证书从里到外签完所有动态库和可执行文件后，最后签整个 `.app` 时报 `resource fork, Finder information, or similar detritus not allowed`，签名失败。
