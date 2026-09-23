@@ -2,6 +2,12 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-23 git push 到 GitHub 报 Permission denied (publickey)，gh 已登录却推不动
+
+- **问题描述**：`gh auth status` 显示已登录、仓库也建好了，但 `git push -u origin HEAD:main` 报 `git@github.com: Permission denied (publickey)`。
+- **原因分析**：gh CLI 的登录态是 HTTPS token，存在自己的凭据存储里；而 remote 默认按 SSH（git@github.com）拼，本机没有配置 GitHub SSH 公钥，两条认证通道互不相干，所以 gh 能用、git 推不动。
+- **解决方案**：把 remote 切成 HTTPS 并让 gh 给 git 做凭据代理：`git remote set-url origin https://github.com/<用户>/<仓库>.git`，再 `gh auth setup-git`（写入 credential helper），重新 push 即成功。反过来想用 SSH 就得先去 GitHub 后台挂公钥，二选一。
+
 ## 2026-09-23 打 universal2 包时 pydantic-core 只发了分架构 wheel，PyInstaller 收集不到 x86_64 版
 
 - **问题描述**：`build-app.sh --bundle-backend` 加 `--target-architecture universal2` 后，打出的包里 `pydantic_core/_pydantic_core.*.so` 仍是 arm64 单架构，Intel Mac 上会 import 失败；用 `pip download --platform macosx_10_13_universal2` 想直接下 universal wheel 时报「from versions: 0.0.1」。
