@@ -19,6 +19,96 @@
       --accent-green: #2ecc71;
       --accent-red: #e74c3c;
       --font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
+      --status-dot-off: #7f8c8d;
+      --btn-bg: #252b37;
+      --btn-bg-hover: #303746;
+      --btn-subtle-hover: #323948;
+      --btn-danger-bg: #7f1d1d;
+      --btn-danger-bg-hover: #991b1b;
+      --btn-danger-text: #fca5a5;
+      --btn-danger-border: #991b1b;
+      --btn-active-bg: #3b4252;
+      --text-bright: #fff;
+      --banner-offline-bg: #22191b;
+      --banner-offline-text: #ffb4ae;
+      --error-text: #ff9b91;
+      --panel-inset-bg: #14171d;
+      --seg-active-bg: #2d3340;
+      --tab-hover-bg: #222733;
+      --tab-active-bg: #29303d;
+      --add-group-bg: #1f242e;
+      --add-group-hover: #2b3240;
+      --all-adjust-bg: #191c24;
+      --all-adjust-border: #2b303d;
+      --card-active-border: #3f4758;
+      --card-off-border: #343946;
+      --card-off-bg: #171a21;
+      --edge-strong: #3e485e;
+      --input-dark-bg: #101217;
+      --chip-bg: #212631;
+      --chip-active-bg: #2a3242;
+      --modal-overlay: rgba(0,0,0,0.7);
+      --modal-bg: #1c212a;
+      --modal-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      --device-item-bg: #242a36;
+      --device-item-hover: #2e3544;
+      --footer-text: #6e7681;
+      --test-fire-bg: #8f6218;
+      --test-fire-bg-hover: #a8751b;
+      --test-fire-text: #fff8eb;
+      --test-fire-border: #bd8629;
+    }
+    /* 浅色主题：仅覆盖变量值，布局与深色完全一致 */
+    :root[data-theme="light"] {
+      --bg-main: #f5f6f8;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --border-subtle: #d9dde3;
+      --border-focus: #b6bdc9;
+      --text-main: #1d2129;
+      --text-muted: #5c6470;
+      --text-dim: #9aa1ac;
+      --accent-godox-hover: #d17f1a;
+      --accent-green: #27ae60;
+      --accent-red: #d64541;
+      --status-dot-off: #b0b7bf;
+      --btn-bg: #e8ebf0;
+      --btn-bg-hover: #dde1e8;
+      --btn-subtle-hover: #d2d7e0;
+      --btn-danger-bg: #fdeaea;
+      --btn-danger-bg-hover: #f9d7d4;
+      --btn-danger-text: #c0392b;
+      --btn-danger-border: #f0c8c4;
+      --btn-active-bg: #fdecd4;
+      --text-bright: #1d2129;
+      --banner-offline-bg: #fdeeee;
+      --banner-offline-text: #c0392b;
+      --error-text: #c0392b;
+      --panel-inset-bg: #f0f1f4;
+      --seg-active-bg: #dde1e8;
+      --tab-hover-bg: #eceff3;
+      --tab-active-bg: #fdecd4;
+      --add-group-bg: #f4f6f8;
+      --add-group-hover: #e9edf2;
+      --all-adjust-bg: #f0f1f4;
+      --all-adjust-border: #d9dde3;
+      --card-active-border: #c3c9d4;
+      --card-off-border: #d9dde3;
+      --card-off-bg: #f0f1f4;
+      --edge-strong: #b6bdc9;
+      --input-dark-bg: #fff8ee;
+      --chip-bg: #eceff3;
+      --chip-active-bg: #fdecd4;
+      --modal-overlay: rgba(0,0,0,0.4);
+      --modal-bg: #ffffff;
+      --modal-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      --device-item-bg: #f0f2f5;
+      --device-item-hover: #e4e8ee;
+      --footer-text: #8a919c;
+      --test-fire-bg: #f3dfb8;
+      --test-fire-bg-hover: #eed49f;
+      --test-fire-text: #7a5310;
+      --test-fire-border: #dcb96f;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -85,11 +175,11 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #7f8c8d;
+      background: var(--status-dot-off);
     }
     .status-dot.connected { background: var(--accent-green); box-shadow: 0 0 8px rgba(46, 204, 113, 0.5); }
     .btn {
-      background: #252b37;
+      background: var(--btn-bg);
       color: var(--text-main);
       border: 1px solid var(--border-subtle);
       padding: 7px 14px;
@@ -102,12 +192,12 @@
       align-items: center;
       gap: 6px;
     }
-    .btn:hover { background: #303746; border-color: var(--border-focus); }
+    .btn:hover { background: var(--btn-bg-hover); border-color: var(--border-focus); }
     .btn-primary { background: var(--accent-godox); color: #000; border-color: var(--accent-godox); font-weight: 600; }
     .btn-primary:hover { background: var(--accent-godox-hover); }
-    .btn-danger { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
-    .btn-danger:hover { background: #991b1b; }
-    .btn-active { background: #3b4252; border-color: var(--accent-godox); color: #fff; }
+    .btn-danger { background: var(--btn-danger-bg); color: var(--btn-danger-text); border-color: var(--btn-danger-border); }
+    .btn-danger:hover { background: var(--btn-danger-bg-hover); }
+    .btn-active { background: var(--btn-active-bg); border-color: var(--accent-godox); color: var(--text-bright); }
     button:disabled, input:disabled {
       cursor: not-allowed;
       opacity: 0.42;
@@ -129,8 +219,8 @@
       color: var(--text-muted);
     }
     .device-state-banner strong { color: var(--text-main); }
-    .device-state-banner.offline { border-left-color: var(--accent-red); background: #22191b; }
-    .device-state-banner.offline strong { color: #ffb4ae; }
+    .device-state-banner.offline { border-left-color: var(--accent-red); background: var(--banner-offline-bg); }
+    .device-state-banner.offline strong { color: var(--banner-offline-text); }
     .device-state-banner.online { border-left-color: var(--accent-green); }
     .device-state-icon { font-size: 16px; line-height: 1.3; }
 
@@ -175,7 +265,7 @@
       padding: 0 10px;
     }
     .mini-btn {
-      background: #252b37;
+      background: var(--btn-bg);
       border: 1px solid var(--border-subtle);
       color: var(--text-main);
       font-size: 13px;
@@ -188,7 +278,7 @@
       justify-content: center;
       cursor: pointer;
     }
-    .mini-btn:hover { background: #323948; }
+    .mini-btn:hover { background: var(--btn-subtle-hover); }
 
     .seg-control {
       display: flex;
@@ -209,7 +299,7 @@
       transition: all 0.15s;
     }
     .seg-btn.active {
-      background: #2d3340;
+      background: var(--seg-active-bg);
       color: var(--text-main);
     }
 
@@ -242,12 +332,12 @@
     }
     .sync-device-btn { background: var(--accent-godox); color: #18120a; border-color: var(--accent-godox); font-weight: 700; }
     .sync-device-btn:hover { background: var(--accent-godox-hover); }
-    .sync-device-btn:disabled { background: #252b37; color: var(--text-muted); border-color: var(--border-subtle); }
+    .sync-device-btn:disabled { background: var(--btn-bg); color: var(--text-muted); border-color: var(--border-subtle); }
     .device-action-row form { display: inline-flex; }
     .test-fire-btn {
-      background: #8f6218;
-      color: #fff8eb;
-      border: 1px solid #bd8629;
+      background: var(--test-fire-bg);
+      color: var(--test-fire-text);
+      border: 1px solid var(--test-fire-border);
       padding: 9px 18px;
       border-radius: 6px;
       font-size: 13px;
@@ -259,7 +349,7 @@
       gap: 10px;
       transition: all 0.15s;
     }
-    .test-fire-btn:hover { background: #a8751b; }
+    .test-fire-btn:hover { background: var(--test-fire-bg-hover); }
 
     .action-feedback {
       display: none;
@@ -276,7 +366,7 @@
     .action-feedback.show { display: block; }
     .action-feedback.working { border-color: var(--accent-godox); color: var(--accent-godox); }
     .action-feedback.success { border-color: var(--accent-green); color: var(--accent-green); }
-    .action-feedback.error { border-color: var(--accent-red); color: #ff9b91; }
+    .action-feedback.error { border-color: var(--accent-red); color: var(--error-text); }
 
     .preset-bar {
       display: flex;
@@ -287,7 +377,7 @@
       padding: 11px 14px;
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      background: #14171d;
+      background: var(--panel-inset-bg);
     }
     .preset-bar label { color: var(--text-muted); font-size: 13px; font-weight: 600; }
     .preset-select {
@@ -319,15 +409,15 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-    .tab-btn:hover { background: #222733; color: var(--text-main); }
+    .tab-btn:hover { background: var(--tab-hover-bg); color: var(--text-main); }
     .tab-btn.active {
-      background: #29303d;
+      background: var(--tab-active-bg);
       border-color: var(--accent-godox);
       color: var(--accent-godox);
     }
     .add-group-btn {
-      background: #1f242e;
-      border: 1px dashed #3d4556;
+      background: var(--add-group-bg);
+      border: 1px dashed var(--border-focus);
       color: var(--accent-godox);
       font-size: 13px;
       font-weight: 600;
@@ -336,14 +426,14 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-    .add-group-btn:hover { background: #2b3240; border-color: var(--accent-godox); }
+    .add-group-btn:hover { background: var(--add-group-hover); border-color: var(--accent-godox); }
 
     .all-adjust-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #191c24;
-      border: 1px solid #2b303d;
+      background: var(--all-adjust-bg);
+      border: 1px solid var(--all-adjust-border);
       border-radius: 8px;
       padding: 10px 16px;
       margin-bottom: 20px;
@@ -369,12 +459,12 @@
       position: relative;
     }
     .group-card.active-card {
-      border-color: #3f4758;
+      border-color: var(--card-active-border);
     }
     .group-card.off {
       opacity: 0.72;
-      border-color: #343946;
-      background: #171a21;
+      border-color: var(--card-off-border);
+      background: var(--card-off-bg);
     }
     .group-header {
       display: flex;
@@ -421,8 +511,8 @@
       transition: all 0.15s;
     }
     .power-val-box:hover {
-      background: #252b37;
-      border-color: #3e485e;
+      background: var(--btn-bg);
+      border-color: var(--edge-strong);
     }
     .power-val-box.is-disabled { cursor: not-allowed; opacity: 0.5; }
     .power-val-box.is-disabled:hover { background: transparent; border-color: transparent; }
@@ -442,7 +532,7 @@
       font-size: 42px;
       font-weight: 700;
       font-family: var(--font-mono);
-      color: #fff;
+      color: var(--text-bright);
       letter-spacing: -1px;
       line-height: 1;
     }
@@ -457,7 +547,7 @@
       font-weight: 700;
       font-family: var(--font-mono);
       color: var(--accent-godox);
-      background: #101217;
+      background: var(--input-dark-bg);
       border: 1px solid var(--accent-godox);
       border-radius: 6px;
       width: 140px;
@@ -477,7 +567,7 @@
       margin-bottom: 12px;
     }
     .stepper-btn {
-      background: #252b37;
+      background: var(--btn-bg);
       border: 1px solid var(--border-subtle);
       color: var(--text-main);
       font-size: 13px;
@@ -489,8 +579,8 @@
       text-align: center;
       transition: all 0.15s;
     }
-    .stepper-btn:hover { background: #323948; border-color: var(--border-focus); }
-    .stepper-btn:active { background: #1c212a; }
+    .stepper-btn:hover { background: var(--btn-subtle-hover); border-color: var(--border-focus); }
+    .stepper-btn:active { background: var(--modal-bg); }
 
     .slider-row {
       display: flex;
@@ -502,7 +592,7 @@
       flex: 1;
       height: 8px;
       -webkit-appearance: none;
-      background: #252b37;
+      background: var(--btn-bg);
       border-radius: 4px;
       outline: none;
     }
@@ -525,14 +615,14 @@
       justify-content: space-between;
       align-items: center;
       padding-top: 14px;
-      border-top: 1px solid #252b37;
+      border-top: 1px solid var(--btn-bg);
       font-size: 13px;
     }
     .toggle-chip {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: #212631;
+      background: var(--chip-bg);
       border: 1px solid var(--border-subtle);
       padding: 6px 12px;
       border-radius: 6px;
@@ -542,29 +632,29 @@
       transition: all 0.15s;
     }
     .toggle-chip.active {
-      background: #2a3242;
+      background: var(--chip-active-bg);
       color: var(--accent-godox);
-      border-color: #3e485e;
+      border-color: var(--edge-strong);
     }
 
     /* Device Scanner Modal */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
+      background: var(--modal-overlay);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
     }
     .modal-content {
-      background: #1c212a;
+      background: var(--modal-bg);
       border: 1px solid var(--border-focus);
       border-radius: 12px;
       width: 90%;
       max-width: 480px;
       padding: 24px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      box-shadow: var(--modal-shadow);
     }
     .modal-header {
       display: flex;
@@ -582,7 +672,7 @@
       margin-bottom: 18px;
     }
     .device-item {
-      background: #242a36;
+      background: var(--device-item-bg);
       border: 1px solid var(--border-subtle);
       padding: 12px 14px;
       border-radius: 8px;
@@ -593,7 +683,7 @@
       transition: all 0.15s;
     }
     .device-item:hover {
-      background: #2e3544;
+      background: var(--device-item-hover);
       border-color: var(--accent-godox);
     }
     .device-item.current {
@@ -603,7 +693,7 @@
     .notice-bar {
       font-size: 13px;
       color: var(--text-muted);
-      background: #14171d;
+      background: var(--panel-inset-bg);
       border-left: 3px solid var(--accent-godox);
       padding: 10px 16px;
       border-radius: 0 6px 6px 0;
@@ -614,10 +704,19 @@
       margin-top: auto;
       padding-top: 24px;
       font-size: 12px;
-      color: #6e7681;
+      color: var(--footer-text);
       text-align: center;
     }
   </style>
+  <script>
+    // 防闪烁：首屏渲染前先按上次选择/系统外观定好主题
+    (function(){
+      var c = localStorage.getItem('godox-theme');
+      if (c !== 'dark' && c !== 'light') { c = 'system'; }
+      var m = window.matchMedia('(prefers-color-scheme: dark)');
+      document.documentElement.dataset.theme = (c === 'system' ? (m.matches ? 'dark' : 'light') : c);
+    })();
+  </script>
 </head>
 <body>
   <div class="container">
@@ -632,6 +731,11 @@
         <div class="status-pill">
           <div class="status-dot" id="statusDot"></div>
           <span id="statusText">正在初始化...</span>
+        </div>
+        <div class="seg-control theme-switch">
+          <button class="seg-btn" data-theme-choice="system" onclick="setThemeChoice('system')">跟随系统</button>
+          <button class="seg-btn" data-theme-choice="dark" onclick="setThemeChoice('dark')">深色</button>
+          <button class="seg-btn" data-theme-choice="light" onclick="setThemeChoice('light')">浅色</button>
         </div>
         <button class="btn" onclick="openDeviceModal()">🔄 切换引闪器</button>
         <button class="btn" id="connectBtn" onclick="toggleConnect()">连接引闪器</button>
@@ -773,7 +877,7 @@
       </div>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">会保存频道、全局开关、显示格式和每个组别的当前设置；不会立即写入实体引闪器。</p>
       <label for="presetNameInput" style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;">方案名称</label>
-      <input id="presetNameInput" type="text" maxlength="40" placeholder="例如：棚拍人像 · 柔光两灯" style="width:100%; background:#101217; color:#fff; border:1px solid var(--border-focus); border-radius:6px; padding:10px; font-size:14px;" onkeydown="if(event.key === 'Enter') createPreset()">
+      <input id="presetNameInput" type="text" maxlength="40" placeholder="例如：棚拍人像 · 柔光两灯" style="width:100%; background:var(--input-dark-bg); color:var(--text-main); border:1px solid var(--border-focus); border-radius:6px; padding:10px; font-size:14px;" onkeydown="if(event.key === 'Enter') createPreset()">
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
         <button class="btn" onclick="closePresetModal()">取消</button>
         <button class="btn btn-primary" onclick="createPreset()">保存方案</button>
@@ -782,6 +886,29 @@
   </div>
 
   <script>
+    // ===== 主题管理：跟随系统 / 深色 / 浅色 =====
+    const THEME_KEY = 'godox-theme';
+    const themeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+    function getThemeChoice() {
+      const v = localStorage.getItem(THEME_KEY);
+      return (v === 'dark' || v === 'light' || v === 'system') ? v : 'system';
+    }
+    function applyTheme(choice) {
+      const resolved = choice === 'system' ? (themeMedia.matches ? 'dark' : 'light') : choice;
+      document.documentElement.dataset.theme = resolved;
+      document.querySelectorAll('.theme-switch .seg-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.themeChoice === choice);
+      });
+    }
+    function setThemeChoice(choice) {
+      localStorage.setItem(THEME_KEY, choice);
+      applyTheme(choice);
+    }
+    themeMedia.addEventListener('change', () => {
+      if (getThemeChoice() === 'system') applyTheme('system');
+    });
+    applyTheme(getThemeChoice());
+
     let appState = {
       connected: false,
       device_name: "未连接",
@@ -1413,7 +1540,7 @@
           item.className = "device-item" + (d.is_current ? " current" : "");
           item.innerHTML = `
             <div>
-              <div style="font-weight: 600; color: #fff;">${d.name}</div>
+              <div style="font-weight: 600; color: var(--text-bright);">${d.name}</div>
               <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">${d.address}</div>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
