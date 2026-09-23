@@ -46,18 +46,36 @@ fi
 # 从里到外逐层签：先动态库 → 后端可执行文件 → Swift 壳 → 整个 .app。
 SIGN_IDENTITY="Godox Dev"
 APP="Godox Controller.app"
+# 签名需要解锁专用钥匙串；密码走环境变量，不写进脚本：
+#   GODOX_KEYCHAIN_PASSWORD=xxx bash build-app.sh --bundle-backend
+if [ -n "${GODOX_KEYCHAIN_PASSWORD:-}" ]; then
+    security unlock-keychain -p "$GODOX_KEYCHAIN_PASSWORD" \
+        ~/Library/Keychains/godox-dev.keychain-db 2>/dev/null || true
+fi
 if security find-identity -p codesigning 2>/dev/null | grep -q "$SIGN_IDENTITY"; then
     echo "使用证书 \"$SIGN_IDENTITY\" 从里到外签名（蓝牙授权跨构建保留）..."
-    # 先清扩展属性（FinderInfo/quarantine 等），否则 codesign 报 detritus not allowed
-    xattr -cr "$APP"
-    if [ -d "$APP/Contents/Resources/backend" ]; then
-        find "$APP/Contents/Resources/backend" \( -name "*.so" -o -name "*.dylib" \) \
+    # 项目在 iCloud Drive 同步目录里：fpfs 会往 .app 根目录和 Python.framework 等目录
+    # 回写 com.apple.fileprovider.fpfs#P / com.apple.FinderInfo 扩展属性，原地 xattr -cr
+    # 几分钟内就被重写，codesign 报 "resource fork, Finder information, or similar
+    # detritus not allowed"。因此先拷到 ${TMPDIR}（不走 iCloud）签完再挪回来；
+    # 挪回后 iCloud 再回写的属性不属于密封内容，不影响已完成的签名。
+    STAGE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/godox-signing.XXXXXX")
+    cp -R "$APP" "$STAGE_DIR/"
+    STAGED_APP="$STAGE_DIR/$APP"
+    xattr -cr "$STAGED_APP"
+    if [ -d "$STAGED_APP/Contents/Resources/backend" ]; then
+        find "$STAGED_APP/Contents/Resources/backend" \( -name "*.so" -o -name "*.dylib" \) \
             -exec codesign --force --sign "$SIGN_IDENTITY" {} +
-        codesign --force --sign "$SIGN_IDENTITY" "$APP/Contents/Resources/backend/GodoxControllerBackend"
+        codesign --force --sign "$SIGN_IDENTITY" "$STAGED_APP/Contents/Resources/backend/GodoxControllerBackend"
     fi
-    codesign --force --sign "$SIGN_IDENTITY" "$APP/Contents/MacOS/GodoxController"
-    codesign --force --sign "$SIGN_IDENTITY" "$APP"
-    echo "签名完成（证书：$SIGN_IDENTITY）"
+    codesign --force --sign "$SIGN_IDENTITY" "$STAGED_APP/Contents/MacOS/GodoxController"
+    codesign --force --sign "$SIGN_IDENTITY" "$STAGED_APP"
+    # 签名后立即验证，不合格直接中止（set -e），绝不让坏包流出去
+    codesign --verify --deep --strict "$STAGED_APP"
+    rm -rf "$APP"
+    mv "$STAGED_APP" "$APP"
+    rm -rf "$STAGE_DIR"
+    echo "签名完成（证书：$SIGN_IDENTITY），深度验证已通过"
 else
     echo "未找到 \"$SIGN_IDENTITY\" 证书，跳过签名（蓝牙授权将无法跨构建保留）"
 fi

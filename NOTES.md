@@ -2,6 +2,18 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-23 iCloud Drive 会回写扩展属性，原地 xattr -cr 清不干净，签名必须挪到 /tmp 暂存
+
+- **问题描述**：`build-app.sh` 签名段明明有 `xattr -cr`，重打包时 codesign 仍报 `resource fork, Finder information, or similar detritus not allowed`；手动再清再签，过几分钟同样的错又出现，陷入死循环。
+- **原因分析**：项目目录在 iCloud 同步的 Documents 里，文件提供器（fpfs）会持续往目录回写 `com.apple.fileprovider.fpfs#P` 和 `com.apple.FinderInfo` 扩展属性（落在 `.app` 根目录和 `backend/_internal/Python.framework` 上）——`xattr -cr` 清完几分钟内就被重新挂上，原地清理永远赢不了这场拔河。
+- **解决方案**：签名改到 `${TMPDIR}` 暂存目录里做——`mktemp -d` → `cp -R` 拷过去 → `xattr -cr` → 从里到外签 → `codesign --verify --deep --strict` 当场验证 → 通过后才挪回项目目录。挪回来后 iCloud 再回写的属性不属于密封内容，不影响已完成的签名。已固化进 `build-app.sh` 签名段。**另注意**：判断签名是否用了证书别看 `codesign -dv` 有没有 `Authority=` 行（自签+未受信任证书时该行可能不显示），要看 `codesign -d --requirements -` 的 designated requirement 是否含 `certificate leaf = H"<证书指纹>"`，或 `--extract-certificates` 提取内嵌证书看 subject。
+
+## 2026-09-23 `bash 脚本 | tail` 管道会掩盖脚本真实退出码，"构建成功"是假象
+
+- **问题描述**：后台跑 `bash build-app.sh --bundle-backend | tail -20`（只留尾部输出），任务显示"exit 0"，但实际上脚本在签名步骤已经因 detritus 错误中止，"签名完成/构建完成"两行根本没打出来。
+- **原因分析**：zsh 默认不设 `pipefail`，管道命令的退出码取最后一个命令（tail）的——tail 永远成功，所以上游 `set -e` 中途死掉也被报告成 exit 0。
+- **解决方案**：跑构建/签名类脚本不要把输出管给 tail 判断成败；要嘛直接跑完整输出，要嘛 `bash build-app.sh > /tmp/build.log 2>&1; echo "exit=$?"` 再看日志。判定构建成功以文件证据为准（`codesign --verify --deep --strict` 通过 + designated requirement 含证书指纹），不以终端"看着跑完了"为准。
+
 ## 2026-09-23 自签证书修复蓝牙授权已实测验证：扫描出设备、直连成功
 
 - **问题描述**：接上一条 adhoc 签名病——零成本的自签证书方案是否真能让 TCC 授权跨构建保留，需要实机验证。
