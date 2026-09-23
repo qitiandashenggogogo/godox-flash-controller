@@ -7,8 +7,11 @@ if [ "${1:-}" = "--bundle-backend" ]; then
     bundle_backend=true
 fi
 
-echo "编译 macOS 原生应用..."
-swiftc -O -swift-version 5 -o GodoxController GodoxController.swift -framework WebKit -framework AppKit
+echo "编译 macOS 原生应用（arm64 + x86_64 双架构，最低 macOS 11）..."
+swiftc -O -swift-version 5 -target arm64-apple-macos11.0 -o GodoxController-arm64 GodoxController.swift -framework WebKit -framework AppKit
+swiftc -O -swift-version 5 -target x86_64-apple-macos11.0 -o GodoxController-x86_64 GodoxController.swift -framework WebKit -framework AppKit
+lipo -create GodoxController-arm64 GodoxController-x86_64 -output GodoxController
+rm GodoxController-arm64 GodoxController-x86_64
 mkdir -p "Godox Controller.app/Contents/MacOS" "Godox Controller.app/Contents/Resources"
 cp Info.plist "Godox Controller.app/Contents/"
 cp GodoxController "Godox Controller.app/Contents/MacOS/GodoxController"
@@ -29,6 +32,7 @@ if [ "$bundle_backend" = true ]; then
     rm -rf build dist/GodoxControllerBackend "Godox Controller.app/Contents/Resources/backend"
     .venv/bin/python -m PyInstaller --noconfirm --clean --onedir \
         --name GodoxControllerBackend \
+        --target-architecture universal2 \
         --paths "$PWD" \
         --add-data "$PWD/app/static:app/static" \
         --collect-all bleak \
