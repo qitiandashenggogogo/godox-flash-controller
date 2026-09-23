@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from app.ble_manager import manager
 
-app = FastAPI(title="Godox X3 Pro 桌面控制台")
+app = FastAPI(title="Godox 引闪器桌面控制台")
 
 @app.get("/api/health")
 async def health():
@@ -228,4 +228,4 @@ async def serve_index():
             index_file,
             headers={"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"},
         )
-    return HTMLResponse("<h1>Godox X3 Pro 桌面控制台</h1><p>请配置 static/index.html</p>")
+    return HTMLResponse("<h1>Godox 引闪器桌面控制台</h1><p>请配置 static/index.html</p>")

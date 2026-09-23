@@ -34,7 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.title = "⚡ X3 Pro"
+            button.title = "⚡ 神牛引闪器"
             button.target = self
             button.action = #selector(statusItemClicked(_:))
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -100,7 +100,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        win.title = "神牛 X3 Pro 桌面控制台"
+        win.title = "神牛引闪器桌面控制台"
         win.level = .floating // Always stay on top over Capture One
         win.delegate = self
 
@@ -193,7 +193,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func showContextMenu(_ button: NSStatusBarButton) {
         let menu = NSMenu()
-        let titleItem = NSMenuItem(title: "神牛 X3 Pro 控制台 (127.0.0.1:8765)", action: nil, keyEquivalent: "")
+        let titleItem = NSMenuItem(title: "神牛引闪器控制台 (127.0.0.1:8765)", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
 
