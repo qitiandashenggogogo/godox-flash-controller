@@ -101,7 +101,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             defer: false
         )
         win.title = "神牛引闪器桌面控制台"
-        win.level = .floating // Always stay on top over Capture One
+        win.level = .floating // 窗口始终置顶，方便盖在其他工作软件上方
         win.delegate = self
 
         let config = WKWebViewConfiguration()
