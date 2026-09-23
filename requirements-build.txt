@@ -1,0 +1,2 @@
+# Only needed by build-release.sh; end users receive the bundled backend.
+pyinstaller>=6.0,<7.0

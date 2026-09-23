@@ -5,3 +5,6 @@ __pycache__/
 .DS_Store
 GodoxController
 Godox Controller.app/
+build/
+dist/
+GodoxControllerBackend.spec

@@ -25,6 +25,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             .standardizedFileURL.path
     }()
 
+    static var bundledBackendURL: URL? {
+        guard let resources = Bundle.main.resourceURL else { return nil }
+        let executable = resources.appendingPathComponent("backend/GodoxControllerBackend")
+        return FileManager.default.isExecutableFile(atPath: executable.path) ? executable : nil
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
@@ -52,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func isServerHealthy() -> Bool {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
-        p.arguments = ["--noproxy", "*", "-s", "-o", "/dev/null", "-w", "%{http_code}", Self.localUrl]
+        p.arguments = ["--noproxy", "*", "-s", Self.localUrl + "api/health"]
         let pipe = Pipe()
         p.standardOutput = pipe
         p.standardError = Pipe()
@@ -60,19 +66,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             try p.run()
             p.waitUntilExit()
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let code = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return code == "200"
+            let response = String(data: data, encoding: .utf8) ?? ""
+            return p.terminationStatus == 0 && response.contains("\"app\":\"godox-controller\"")
         } catch {
             return false
         }
     }
 
     func startServer() {
-        let venvPython = Self.workDir + "/.venv/bin/python"
         let p = Process()
-        p.executableURL = URL(fileURLWithPath: venvPython)
-        p.arguments = ["-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", String(Self.port)]
-        p.currentDirectoryURL = URL(fileURLWithPath: Self.workDir)
+        if let backend = Self.bundledBackendURL {
+            p.executableURL = backend
+            p.currentDirectoryURL = backend.deletingLastPathComponent()
+        } else {
+            let venvPython = Self.workDir + "/.venv/bin/python"
+            p.executableURL = URL(fileURLWithPath: venvPython)
+            p.arguments = ["-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", String(Self.port)]
+            p.currentDirectoryURL = URL(fileURLWithPath: Self.workDir)
+        }
         do {
             try p.run()
             serverProcess = p
@@ -196,7 +207,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
         p.arguments = ["--noproxy", "*", "-s", "-X", "POST", Self.localUrl + "api/test_fire"]
-        try? p.run()
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        p.standardError = Pipe()
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                try p.run()
+                p.waitUntilExit()
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let response = String(data: data, encoding: .utf8) ?? ""
+                let success = response.contains("\"success\":true")
+                let title = success ? "引闪器已确认试闪指令" : "试闪失败"
+                let detail = success ? "请观察实体闪光灯是否触发。" : "请确认引闪器已连接、在蓝牙范围内后重试。"
+                DispatchQueue.main.async {
+                    let alert = NSAlert()
+                    alert.messageText = title
+                    alert.informativeText = detail
+                    alert.addButton(withTitle: "好")
+                    alert.runModal()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    let alert = NSAlert(error: error)
+                    alert.runModal()
+                }
+            }
+        }
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {

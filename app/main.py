@@ -7,6 +7,10 @@ from app.ble_manager import manager
 
 app = FastAPI(title="Godox X3 Pro 桌面控制台")
 
+@app.get("/api/health")
+async def health():
+    return {"app": "godox-controller", "version": "1.1"}
+
 class SetGroupRequest(BaseModel):
     group: str
     mode: str = "M"
@@ -38,6 +42,9 @@ class ActiveGroupRequest(BaseModel):
 
 class GroupManageRequest(BaseModel):
     group: str
+
+class PresetCreateRequest(BaseModel):
+    name: str
 
 @app.get("/api/status")
 async def get_status():
@@ -104,12 +111,50 @@ async def adjust_all(req: AdjustAllRequest):
 
 @app.post("/api/set_display_mode")
 async def set_display_mode(req: DisplayModeRequest):
-    manager.power_display_mode = req.mode
+    if req.mode not in {"fraction", "decimal", "dual"}:
+        raise HTTPException(status_code=400, detail="不支持的功率显示格式")
+    manager.set_display_mode(req.mode)
     return {"success": True, "status": manager.get_status()}
 
 @app.post("/api/set_active_group")
 async def set_active_group(req: ActiveGroupRequest):
-    manager.active_group = req.group.upper()
+    manager.set_active_group(req.group)
+    return {"success": True, "status": manager.get_status()}
+
+@app.get("/api/presets")
+async def list_presets():
+    return {"presets": manager.list_presets(), "default_preset_id": manager.default_preset_id}
+
+@app.post("/api/presets")
+async def create_preset(req: PresetCreateRequest):
+    try:
+        preset = manager.create_preset(req.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"success": True, "preset": preset, "status": manager.get_status()}
+
+@app.post("/api/presets/{preset_id}/apply")
+async def apply_preset(preset_id: str):
+    if not manager.apply_preset(preset_id):
+        raise HTTPException(status_code=404, detail="未找到该方案")
+    return {"success": True, "status": manager.get_status()}
+
+@app.post("/api/presets/{preset_id}/default")
+async def set_default_preset(preset_id: str):
+    if not manager.set_default_preset(preset_id):
+        raise HTTPException(status_code=404, detail="未找到该方案")
+    return {"success": True, "status": manager.get_status()}
+
+@app.post("/api/presets/apply_default")
+async def apply_default_preset():
+    if not manager.apply_default_preset():
+        raise HTTPException(status_code=404, detail="尚未设定默认方案")
+    return {"success": True, "status": manager.get_status()}
+
+@app.delete("/api/presets/{preset_id}")
+async def delete_preset(preset_id: str):
+    if not manager.delete_preset(preset_id):
+        raise HTTPException(status_code=404, detail="未找到该方案")
     return {"success": True, "status": manager.get_status()}
 
 
@@ -143,8 +188,7 @@ async def sync_to_device_form():
 
 @app.post("/api/test_fire")
 async def test_fire():
-    success = await manager.test_fire()
-    return {"success": success}
+    return await manager.test_fire()
 
 @app.post("/api/save_screenshot")
 async def save_screenshot(request: Request):

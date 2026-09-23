@@ -231,6 +231,30 @@
     .action-feedback.success { border-color: var(--accent-green); color: var(--accent-green); }
     .action-feedback.error { border-color: var(--accent-red); color: #ff9b91; }
 
+    .preset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin: -4px 0 16px;
+      padding: 11px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: #14171d;
+    }
+    .preset-bar label { color: var(--text-muted); font-size: 13px; font-weight: 600; }
+    .preset-select {
+      min-width: 170px;
+      max-width: 260px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+    .preset-hint { color: var(--text-dim); font-size: 12px; margin-left: auto; }
+
     .group-nav-tabs {
       display: flex;
       flex-wrap: wrap;
@@ -578,6 +602,19 @@
       </div>
     </div>
 
+    <div class="preset-bar" aria-label="我的方案">
+      <label for="presetSelect">我的方案</label>
+      <select class="preset-select" id="presetSelect" onchange="selectPreset(this.value)">
+        <option value="">选择已保存的方案…</option>
+      </select>
+      <button class="btn" onclick="openPresetModal()">＋ 保存当前为方案</button>
+      <button class="btn" onclick="applySelectedPreset()">载入方案</button>
+      <button class="btn" onclick="setSelectedPresetDefault()">设为默认</button>
+      <button class="btn" onclick="applyDefaultPreset()">恢复默认方案</button>
+      <button class="btn btn-danger" onclick="deleteSelectedPreset()">删除</button>
+      <span class="preset-hint">方案只载入桌面；需点“同步”才写入引闪器</span>
+    </div>
+
     <div class="action-row">
       <div class="group-nav-tabs" id="groupTabsContainer">
         <!-- Injected by JS -->
@@ -656,6 +693,23 @@
     </div>
   </div>
 
+  <!-- Preset Modal -->
+  <div class="modal-overlay" id="presetModal">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <div class="modal-title">保存当前布光方案</div>
+        <button class="remove-group-btn" onclick="closePresetModal()">✕</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">会保存频道、全局开关、显示格式和每个组别的当前设置；不会立即写入实体引闪器。</p>
+      <label for="presetNameInput" style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;">方案名称</label>
+      <input id="presetNameInput" type="text" maxlength="40" placeholder="例如：棚拍人像 · 柔光两灯" style="width:100%; background:#101217; color:#fff; border:1px solid var(--border-focus); border-radius:6px; padding:10px; font-size:14px;" onkeydown="if(event.key === 'Enter') createPreset()">
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+        <button class="btn" onclick="closePresetModal()">取消</button>
+        <button class="btn btn-primary" onclick="createPreset()">保存方案</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let appState = {
       connected: false,
@@ -670,11 +724,14 @@
       all_available_groups: ["A", "B", "C", "D", "E", "F", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
       groups: {},
       power_table: [],
-      discovered_devices: []
+      discovered_devices: [],
+      presets: [],
+      default_preset_id: null
     };
 
     let debounceTimers = {};
     let editingGroup = null;
+    let selectedPresetId = "";
 
     async function fetchStatus() {
       try {
@@ -691,6 +748,8 @@
         if (data.all_available_groups) appState.all_available_groups = data.all_available_groups;
         if (data.groups) appState.groups = data.groups;
         if (data.power_table) appState.power_table = data.power_table;
+        if (data.presets) appState.presets = data.presets;
+        appState.default_preset_id = data.default_preset_id || null;
         updateUI();
       } catch (e) {
         console.error("fetchStatus error", e);
@@ -728,9 +787,125 @@
       soundBtn.className = "btn " + (appState.global_sound ? "btn-active" : "");
 
       renderTabs();
+      renderPresets();
       document.getElementById("allAdjustBar").style.display = (appState.active_group === "ALL" ? "flex" : "none");
 
       renderGroups();
+    }
+
+    function renderPresets() {
+      const select = document.getElementById("presetSelect");
+      if (!select) return;
+      const existing = selectedPresetId || select.value;
+      select.innerHTML = '<option value="">选择已保存的方案…</option>';
+      appState.presets.forEach(function (preset) {
+        const option = document.createElement("option");
+        option.value = preset.id;
+        option.textContent = preset.name + (preset.is_default ? " ★ 默认" : "");
+        select.appendChild(option);
+      });
+      selectedPresetId = appState.presets.some(function (preset) { return preset.id === existing; }) ? existing : "";
+      select.value = selectedPresetId;
+    }
+
+    function selectPreset(id) {
+      selectedPresetId = id;
+    }
+
+    function openPresetModal() {
+      document.getElementById("presetNameInput").value = "";
+      document.getElementById("presetModal").style.display = "flex";
+      setTimeout(function () { document.getElementById("presetNameInput").focus(); }, 0);
+    }
+
+    function closePresetModal() {
+      document.getElementById("presetModal").style.display = "none";
+    }
+
+    async function apiJson(url, options) {
+      const response = await fetch(url, options);
+      const body = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(body.detail || body.message || "操作失败");
+      return body;
+    }
+
+    async function createPreset() {
+      const input = document.getElementById("presetNameInput");
+      const name = input.value.trim();
+      if (!name) {
+        input.focus();
+        showActionFeedback("请先填写方案名称", "error", 6000);
+        return;
+      }
+      try {
+        const result = await apiJson("/api/presets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name })
+        });
+        selectedPresetId = result.preset.id;
+        closePresetModal();
+        await fetchStatus();
+        showActionFeedback("✓ 已保存方案“" + result.preset.name + "”；当前设置会在下次启动自动恢复", "success", 8000);
+      } catch (error) {
+        showActionFeedback("× 保存方案失败：" + error.message, "error", 10000);
+      }
+    }
+
+    function requireSelectedPreset() {
+      if (!selectedPresetId) {
+        showActionFeedback("请先在“我的方案”中选择一个方案", "error", 6000);
+        return false;
+      }
+      return true;
+    }
+
+    async function applySelectedPreset() {
+      if (!requireSelectedPreset()) return;
+      const selected = appState.presets.find(function (preset) { return preset.id === selectedPresetId; });
+      try {
+        await apiJson("/api/presets/" + encodeURIComponent(selectedPresetId) + "/apply", { method: "POST" });
+        await fetchStatus();
+        showActionFeedback("✓ 已载入“" + (selected ? selected.name : "该方案") + "”到桌面；尚未写入实体引闪器", "success", 9000);
+      } catch (error) {
+        showActionFeedback("× 载入方案失败：" + error.message, "error", 10000);
+      }
+    }
+
+    async function setSelectedPresetDefault() {
+      if (!requireSelectedPreset()) return;
+      const selected = appState.presets.find(function (preset) { return preset.id === selectedPresetId; });
+      try {
+        await apiJson("/api/presets/" + encodeURIComponent(selectedPresetId) + "/default", { method: "POST" });
+        await fetchStatus();
+        showActionFeedback("✓ 已将“" + (selected ? selected.name : "该方案") + "”设为默认方案", "success", 8000);
+      } catch (error) {
+        showActionFeedback("× 设置默认方案失败：" + error.message, "error", 10000);
+      }
+    }
+
+    async function applyDefaultPreset() {
+      try {
+        await apiJson("/api/presets/apply_default", { method: "POST" });
+        await fetchStatus();
+        showActionFeedback("✓ 已恢复默认方案到桌面；尚未写入实体引闪器", "success", 9000);
+      } catch (error) {
+        showActionFeedback("× 无法恢复默认方案：" + error.message, "error", 10000);
+      }
+    }
+
+    async function deleteSelectedPreset() {
+      if (!requireSelectedPreset()) return;
+      const selected = appState.presets.find(function (preset) { return preset.id === selectedPresetId; });
+      if (!confirm("确定删除方案“" + (selected ? selected.name : "") + "”吗？此操作无法恢复。")) return;
+      try {
+        await apiJson("/api/presets/" + encodeURIComponent(selectedPresetId), { method: "DELETE" });
+        selectedPresetId = "";
+        await fetchStatus();
+        showActionFeedback("✓ 已删除方案", "success", 6000);
+      } catch (error) {
+        showActionFeedback("× 删除方案失败：" + error.message, "error", 10000);
+      }
     }
 
     function renderTabs() {
@@ -1137,17 +1312,6 @@
       fetchStatus();
     }
 
-    async function testFire() {
-      try {
-        const btn = document.querySelector(".test-fire-btn");
-        btn.style.opacity = "0.7";
-        await fetch('/api/test_fire', { method: 'POST' });
-        setTimeout(() => { btn.style.opacity = "1"; }, 300);
-      } catch (e) {
-        console.error("test fire error", e);
-      }
-    }
-
     function flashStatus(msg, ms) {
       if (!ms) ms = 3000;
       var el = document.getElementById("statusText");
@@ -1272,19 +1436,27 @@
     document.getElementById('syncForm').addEventListener('submit', onSyncFormSubmit);
     document.getElementById('offForm').addEventListener('submit', onOffFormSubmit);
 
-    // 试闪按钮（保持原 onclick 方式：fetch + flashStatus 反馈）
+    // 只有收到 FFF4 回包才报“引闪器已确认”；物理闪光仍需用户目测确认。
     document.getElementById('btnTestFire').addEventListener('click', function () {
       var btn = this;
       var oldText = btn.innerText;
       btn.innerText = '⏳ 试闪中...';
       btn.disabled = true;
-      fetch('/api/test_fire', { method: 'POST' }).then(function () {
-        setTimeout(function () { btn.innerText = oldText; btn.disabled = false; }, 300);
-        flashStatus('⚡ 试闪指令已发送（请观察实体引闪器或棚内闪光）', 2000);
+      showActionFeedback('正在向引闪器发送试闪指令，并等待设备确认…', 'working');
+      fetch('/api/test_fire', { method: 'POST' }).then(function (r) { return r.json(); }).then(function (j) {
+        var msg = j.success
+          ? '✓ 引闪器已确认试闪指令（回包 ' + (j.ack || '已收到') + '）；请观察实体闪光灯是否触发'
+          : '× 试闪失败：' + (j.detail || '未收到引闪器确认');
+        showActionFeedback(msg, j.success ? 'success' : 'error', j.success ? 10000 : 12000);
+        flashStatus(msg, 5000);
       }).catch(function (e) {
-        flashStatus('× 试闪网络异常：' + e.message, 4000);
+        var msg = '× 试闪网络异常：' + e.message;
+        showActionFeedback(msg, 'error', 10000);
+        flashStatus(msg, 5000);
+      }).finally(function () {
         btn.innerText = oldText;
         btn.disabled = false;
+        fetchStatus();
       });
     });
   </script>

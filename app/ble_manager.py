@@ -1,14 +1,23 @@
 import asyncio
+import copy
 import json
 import logging
 import os
 import time
+import uuid
+from pathlib import Path
 from typing import Optional, Dict, Any, List
 from bleak import BleakClient, BleakScanner
 
 logger = logging.getLogger("godox_ble")
 
-STATE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "studio_state.json")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+LEGACY_STATE_FILE = PROJECT_ROOT / "config" / "studio_state.json"
+# 配置不能写在 .app 或源码目录：升级/替换应用时，用户的布光方案必须保留。
+# 环境变量仅供自动化验证使用，正常用户始终使用自己的 Application Support 目录。
+STATE_DIR = Path(os.environ.get("GODOX_CONTROLLER_STATE_DIR", "")) if os.environ.get("GODOX_CONTROLLER_STATE_DIR") else Path.home() / "Library" / "Application Support" / "Godox Controller"
+STATE_FILE = STATE_DIR / "studio_state.json"
+STATE_SCHEMA_VERSION = 2
 
 SERVICE_FEC0 = "0000fec0-0000-1000-8000-00805f9b34fb"
 CHAR_FEC7 = "0000fec7-0000-1000-8000-00805f9b34fb"
@@ -89,8 +98,8 @@ def dec_to_fraction(dec_val: int) -> str:
 class BleManager:
     def __init__(self):
         self.client: Optional[BleakClient] = None
-        self.device_address: Optional[str] = "628A1160-0E76-D5A7-CCB6-5DA73EC96391"
-        self.device_name: str = "GDBH-E601"
+        self.device_address: Optional[str] = None
+        self.device_name: str = "未选择引闪器"
         self.is_connected: bool = False
         self.last_rssi: Optional[int] = None
         self.last_ack: Optional[str] = None
@@ -98,6 +107,9 @@ class BleManager:
         self.reconnect_task: Optional[asyncio.Task] = None
         self.auto_reconnect: bool = True
         self._lock = asyncio.Lock()
+        self._test_fire_lock = asyncio.Lock()
+        self._test_fire_ack_event = asyncio.Event()
+        self.last_test_fire_ack: Optional[str] = None
 
         self.discovered_devices: List[Dict[str, Any]] = []
 
@@ -109,45 +121,161 @@ class BleManager:
         self.power_display_mode: str = "decimal"
         self.active_group: str = "ALL"
 
-        # Initialize with empty visible groups and empty groups dict
-        self.visible_groups: List[str] = []
-        self.groups: Dict[str, Dict[str, Any]] = {}
+        # 新安装也必须可直接使用；旧用户的 state 会在 load_state_from_disk 中覆盖这些通用初值。
+        self.visible_groups: List[str] = ["A", "B", "C", "D", "E"]
+        self.groups: Dict[str, Dict[str, Any]] = {
+            group: {
+                "mode": "M",
+                "power": "1/64",
+                "decimal_power": "4.0",
+                "dec_val": 40,
+                "sound": False,
+                "lamp": False,
+            }
+            for group in self.visible_groups
+        }
 
         self.load_state_from_disk()
 
+    def _current_state(self) -> Dict[str, Any]:
+        """仅保存桌面工作状态；命名方案会保存这份状态的独立快照。"""
+        return {
+            "channel": self.channel,
+            "wireless_id": self.wireless_id,
+            "global_lamp": self.global_lamp,
+            "global_sound": self.global_sound,
+            "power_display_mode": self.power_display_mode,
+            "active_group": self.active_group,
+            "visible_groups": copy.deepcopy(self.visible_groups),
+            "groups": copy.deepcopy(self.groups),
+        }
+
+    def _apply_current_state(self, state: Dict[str, Any]) -> None:
+        self.channel = int(state.get("channel", self.channel))
+        self.wireless_id = int(state.get("wireless_id", self.wireless_id))
+        self.global_lamp = bool(state.get("global_lamp", self.global_lamp))
+        self.global_sound = bool(state.get("global_sound", self.global_sound))
+        self.power_display_mode = state.get("power_display_mode", self.power_display_mode)
+        self.active_group = state.get("active_group", self.active_group)
+        visible = state.get("visible_groups", self.visible_groups)
+        self.visible_groups = [g for g in visible if g in ALL_AVAILABLE_GROUPS]
+        groups = state.get("groups", {})
+        self.groups = {g: copy.deepcopy(data) for g, data in groups.items() if g in ALL_AVAILABLE_GROUPS and isinstance(data, dict)}
+
+    def _state_payload(self) -> Dict[str, Any]:
+        return {
+            "schema_version": STATE_SCHEMA_VERSION,
+            "current_state": self._current_state(),
+            "presets": copy.deepcopy(self.presets),
+            "default_preset_id": self.default_preset_id,
+            "device": {"address": self.device_address, "name": self.device_name},
+        }
+
+    def _load_payload(self, data: Dict[str, Any]) -> None:
+        # 兼容 1.0 版本：旧文件把当前状态直接放在根层。
+        current_state = data.get("current_state", data)
+        if isinstance(current_state, dict):
+            self._apply_current_state(current_state)
+        device = data.get("device", data)
+        if isinstance(device, dict):
+            self.device_address = device.get("address", data.get("device_address", self.device_address))
+            self.device_name = device.get("name", data.get("device_name", self.device_name)) or "未选择引闪器"
+        raw_presets = data.get("presets", [])
+        self.presets = [p for p in raw_presets if isinstance(p, dict) and p.get("id") and p.get("name") and isinstance(p.get("state"), dict)]
+        self.default_preset_id = data.get("default_preset_id")
+        if self.default_preset_id and not any(p["id"] == self.default_preset_id for p in self.presets):
+            self.default_preset_id = None
+
     def load_state_from_disk(self):
+        self.presets: List[Dict[str, Any]] = []
+        self.default_preset_id: Optional[str] = None
         try:
-            if os.path.exists(STATE_FILE):
-                with open(STATE_FILE, "r", encoding="utf-8") as f:
+            source = STATE_FILE
+            migrated_from_legacy = False
+            if not source.exists() and LEGACY_STATE_FILE.exists():
+                source = LEGACY_STATE_FILE
+                migrated_from_legacy = True
+            if source.exists():
+                with source.open("r", encoding="utf-8") as f:
                     data = json.load(f)
-                self.channel = data.get("channel", self.channel)
-                self.global_lamp = data.get("global_lamp", self.global_lamp)
-                self.global_sound = data.get("global_sound", self.global_sound)
-                self.power_display_mode = data.get("power_display_mode", "decimal")
-                self.visible_groups = data.get("visible_groups", self.visible_groups)
-                if "groups" in data:
-                    self.groups.update(data["groups"])
-                logger.info("Loaded studio state from disk.")
+                if isinstance(data, dict):
+                    self._load_payload(data)
+                    logger.info("Loaded studio state from %s.", source)
+                    if migrated_from_legacy:
+                        self.save_state_to_disk()
+                        logger.info("Migrated legacy studio state into %s.", STATE_FILE)
         except Exception as e:
             logger.error(f"Failed to load state: {e}")
 
     def save_state_to_disk(self):
         try:
-            os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-            data = {
-                "channel": self.channel,
-                "global_lamp": self.global_lamp,
-                "global_sound": self.global_sound,
-                "power_display_mode": self.power_display_mode,
-                "visible_groups": self.visible_groups,
-                "groups": self.groups,
-                "device_address": self.device_address,
-                "device_name": self.device_name,
-            }
-            with open(STATE_FILE, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
+            STATE_DIR.mkdir(parents=True, exist_ok=True)
+            temp_file = STATE_DIR / f".{STATE_FILE.name}.{os.getpid()}.tmp"
+            with temp_file.open("w", encoding="utf-8") as f:
+                json.dump(self._state_payload(), f, ensure_ascii=False, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temp_file, STATE_FILE)
         except Exception as e:
             logger.error(f"Failed to save state: {e}")
+
+    def list_presets(self) -> List[Dict[str, Any]]:
+        return [
+            {"id": p["id"], "name": p["name"], "is_default": p["id"] == self.default_preset_id}
+            for p in self.presets
+        ]
+
+    def create_preset(self, name: str) -> Dict[str, Any]:
+        clean_name = name.strip()
+        if not clean_name:
+            raise ValueError("方案名称不能为空")
+        if len(clean_name) > 40:
+            raise ValueError("方案名称不能超过 40 个字符")
+        if any(p["name"] == clean_name for p in self.presets):
+            raise ValueError("已有同名方案，请换一个名称")
+        preset = {"id": uuid.uuid4().hex, "name": clean_name, "state": self._current_state()}
+        self.presets.append(preset)
+        self.save_state_to_disk()
+        return {"id": preset["id"], "name": preset["name"], "is_default": False}
+
+    def _find_preset(self, preset_id: str) -> Optional[Dict[str, Any]]:
+        return next((p for p in self.presets if p["id"] == preset_id), None)
+
+    def apply_preset(self, preset_id: str) -> bool:
+        preset = self._find_preset(preset_id)
+        if not preset:
+            return False
+        self._apply_current_state(preset["state"])
+        self.save_state_to_disk()
+        return True
+
+    def set_default_preset(self, preset_id: str) -> bool:
+        if not self._find_preset(preset_id):
+            return False
+        self.default_preset_id = preset_id
+        self.save_state_to_disk()
+        return True
+
+    def apply_default_preset(self) -> bool:
+        return bool(self.default_preset_id and self.apply_preset(self.default_preset_id))
+
+    def delete_preset(self, preset_id: str) -> bool:
+        preset = self._find_preset(preset_id)
+        if not preset:
+            return False
+        self.presets.remove(preset)
+        if self.default_preset_id == preset_id:
+            self.default_preset_id = None
+        self.save_state_to_disk()
+        return True
+
+    def set_display_mode(self, mode: str) -> None:
+        self.power_display_mode = mode
+        self.save_state_to_disk()
+
+    def set_active_group(self, group: str) -> None:
+        self.active_group = group.upper()
+        self.save_state_to_disk()
 
     def _on_fec8_notify(self, sender, data: bytearray):
         self.last_ack = data.hex(" ")
@@ -170,7 +298,9 @@ class BleManager:
                     self.groups[group_letter]["sound"] = (data[7] == 0x01)
 
     def _on_fff4_notify(self, sender, data: bytearray):
-        logger.info(f"Received FFF4 notify: {data.hex(' ')}")
+        self.last_test_fire_ack = bytes(data).decode("ascii", errors="replace").strip()
+        logger.info("Received FFF4 notify: %s (%s)", self.last_test_fire_ack, data.hex(" "))
+        self._test_fire_ack_event.set()
 
     def _on_disconnected(self, client):
         logger.warning("BLE device disconnected!")
@@ -249,6 +379,7 @@ class BleManager:
                     except Exception:
                         pass
                     self.last_msg = f"已连接: {self.device_name}"
+                    self.save_state_to_disk()
                     return True
             except Exception as e:
                 logger.error(f"Connect error: {e}")
@@ -458,18 +589,29 @@ class BleManager:
                 await asyncio.sleep(0.08)
         return success
 
-    async def test_fire(self) -> bool:
+    async def test_fire(self) -> Dict[str, Any]:
         if not self.is_connected or not self.client:
-            return False
-        base_ms = 1483228800000
-        diff_ms = int(time.time() * 1000) - base_ms
-        cmd = f"{diff_ms},Test".encode("ascii")
-        try:
-            await self.client.write_gatt_char(CHAR_FFF1, cmd, response=False)
-            return True
-        except Exception as e:
-            logger.error(f"Test fire error: {e}")
-            return False
+            self.last_msg = "试闪失败：引闪器未连接"
+            return {"success": False, "detail": "引闪器未连接，请先点击“连接引闪器”"}
+        async with self._test_fire_lock:
+            base_ms = 1483228800000
+            diff_ms = int(time.time() * 1000) - base_ms
+            cmd = f"{diff_ms},Test".encode("ascii")
+            self.last_test_fire_ack = None
+            self._test_fire_ack_event.clear()
+            try:
+                await self.client.write_gatt_char(CHAR_FFF1, cmd, response=False)
+            except Exception as e:
+                logger.error("Test fire write error: %s", e)
+                self.last_msg = f"试闪写入失败：{e}"
+                return {"success": False, "detail": "试闪指令写入失败，请重新连接后重试"}
+            try:
+                await asyncio.wait_for(self._test_fire_ack_event.wait(), timeout=1.8)
+            except asyncio.TimeoutError:
+                self.last_msg = "试闪未收到引闪器确认"
+                return {"success": False, "detail": "未收到引闪器确认，请检查蓝牙距离、连接状态和实体闪光灯"}
+            self.last_msg = "引闪器已确认试闪指令"
+            return {"success": True, "ack": self.last_test_fire_ack, "detail": "已收到引闪器确认；请观察实体闪光灯是否触发"}
 
     def get_status(self) -> Dict[str, Any]:
         return {
@@ -478,6 +620,7 @@ class BleManager:
             "device_address": self.device_address,
             "rssi": self.last_rssi,
             "last_ack": self.last_ack,
+            "last_test_fire_ack": self.last_test_fire_ack,
             "message": self.last_msg,
             "channel": self.channel,
             "wireless_id": self.wireless_id,
@@ -490,6 +633,8 @@ class BleManager:
             "groups": self.groups,
             "power_table": POWER_TABLE,
             "discovered_devices": self.discovered_devices,
+            "presets": self.list_presets(),
+            "default_preset_id": self.default_preset_id,
         }
 
 manager = BleManager()

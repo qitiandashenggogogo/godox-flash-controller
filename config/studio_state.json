@@ -1,57 +1,50 @@
 {
-  "channel": 6,
+  "channel": 1,
   "global_lamp": false,
   "global_sound": true,
   "power_display_mode": "decimal",
-  "visible_groups": [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E"
-  ],
+  "active_group": "ALL",
+  "visible_groups": ["A", "B", "C", "D", "E"],
   "groups": {
     "A": {
       "mode": "M",
-      "power": "1/2+0.3",
-      "decimal_power": "9.5",
-      "dec_val": 95,
+      "power": "1/64",
+      "decimal_power": "4.0",
+      "dec_val": 40,
       "sound": false,
       "lamp": false
     },
     "B": {
       "mode": "M",
-      "power": "1/4+0.3",
-      "decimal_power": "8.5",
-      "dec_val": 85,
+      "power": "1/64",
+      "decimal_power": "4.0",
+      "dec_val": 40,
       "sound": false,
       "lamp": false
     },
     "C": {
-      "mode": "OFF",
-      "power": "1/16",
-      "decimal_power": "6.0",
-      "dec_val": 60,
+      "mode": "M",
+      "power": "1/64",
+      "decimal_power": "4.0",
+      "dec_val": 40,
       "sound": false,
       "lamp": false
     },
     "D": {
       "mode": "M",
-      "power": "1/16",
-      "decimal_power": "6.0",
-      "dec_val": 60,
+      "power": "1/64",
+      "decimal_power": "4.0",
+      "dec_val": 40,
       "sound": false,
       "lamp": false
     },
     "E": {
-      "mode": "OFF",
-      "power": "1/128",
-      "decimal_power": "3.0",
-      "dec_val": 30,
+      "mode": "M",
+      "power": "1/64",
+      "decimal_power": "4.0",
+      "dec_val": 40,
       "sound": false,
       "lamp": false
     }
-  },
-  "device_address": "628A1160-0E76-D5A7-CCB6-5DA73EC96391",
-  "device_name": "GDBH-E601"
+  }
 }
