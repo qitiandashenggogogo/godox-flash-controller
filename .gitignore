@@ -8,3 +8,16 @@ Godox Controller.app/
 build/
 dist/
 GodoxControllerBackend.spec
+
+# 本地 AI 工具与会话状态（不发布到公开仓库）
+.claude/
+.codex/
+.meta-kim/
+.cindy-worktrees/
+graphify-out/
+AGENTS.md
+CLAUDE.md
+findings.md
+progress.md
+task_plan.md
+theme-*.png
