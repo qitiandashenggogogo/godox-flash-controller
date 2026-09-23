@@ -2,6 +2,18 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-23 adhoc 签名导致 macOS 蓝牙授权"点了允许也没反应"——每次重打包指纹变、旧授权全作废
+
+- **问题描述**：打包版 App 点「连接引闪器/切换引闪器」弹出系统蓝牙授权，点「允许」后无任何反应，扫描接口返回 500；系统设置「隐私与安全性→蓝牙」里攒了 5 个 Godox 条目且全部打开也没用。Intel 老 macOS 正常，macOS 26/27 都复现。
+- **原因分析**：App 是 adhoc 签名（等于无签名），TCC（隐私权限系统）只能按二进制的 cdhash 指纹记身份。每次 `build-app.sh` 重打包 cdhash 就变，旧授权条目全部失配——tccd 日志铁证是反复输出 `Failed to match existing code requirement for subject com.godoxcontroller.desktop and service kTCCServiceBluetoothAlways`；随后 CoreBluetooth 报 `XPC connection invalid`，BLE 通道在进程生命周期内永久死亡，之后的扫描全部抛异常。日志同时证明归因链条本身是好的（responsible=Swift 壳、requesting=Python 后端），排除"授权给壳、子进程不继承"的架构病。
+- **解决方案**：根修只有让签名身份跨构建稳定——Apple Developer ID 签名 + 公证（$99/年），TCC 按证书身份匹配，授权永久有效且同事机器双击可用。本机临时续命可 `tccutil reset Bluetooth com.godoxcontroller.desktop` 后重授权，但下次打包即失效，治标不治本。
+
+## 2026-09-23 zsh 把 macOS 的 log 命令劫持成内建，排查日志全是假阴性
+
+- **问题描述**：用 `log show --last 5m --predicate ...` 查 macOS 统一日志，连续多次返回空，误以为系统没记录。实际上 tccd / CoreBluetooth 的报错一直都在。
+- **原因分析**：本机 zsh 配置里 `log` 是 shell 内建（`type log` 显示 `log is a shell builtin`），直接写 `log show` 走的是内建、报 "too many arguments"；命令尾部带 `2>/dev/null` 时错误被吞掉，表现为"查询成功但没结果"——最阴的假阴性，导致前两次日志排查全部白跑。
+- **解决方案**：调 macOS 日志工具一律写绝对路径 `/usr/bin/log show ...` / `/usr/bin/log stream ...`；排查类命令先去掉 `2>/dev/null` 跑一次确认不是命令本身报错，再收窄输出。
+
 ## 2026-09-23 git push 到 GitHub 报 Permission denied (publickey)，gh 已登录却推不动
 
 - **问题描述**：`gh auth status` 显示已登录、仓库也建好了，但 `git push -u origin HEAD:main` 报 `git@github.com: Permission denied (publickey)`。
