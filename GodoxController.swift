@@ -1,12 +1,16 @@
 import AppKit
 import Foundation
 import WebKit
+import CoreBluetooth
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var statusItem: NSStatusItem!
     private var window: NSWindow?
     private var webView: WKWebView?
     private var serverProcess: Process?
+    // 用于在 Swift 进程内预热 CoreBluetooth，让 macOS 把 BLE 权限归属到 .app Bundle，
+    // 而不是落到后端 Python 进程上；后端 bleak 调用才能拿到「点了允许」之后真正可用的状态。
+    private var bluetoothWarmer: CBCentralManager?
 
     static let port = 8765
     static let localUrl = "http://127.0.0.1:8765/"
@@ -40,12 +44,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
 
+        // 预热 CoreBluetooth：让 macOS 把 BLE 权限落到当前 .app Bundle，
+        // 否则 Python 后端的 bleak 调用会在系统层断链（弹窗能弹但 allow 不生效）。
+        warmUpCoreBluetooth()
+
         ensureServerRunning()
         setupFloatingWindow()
 
         // Auto show on first launch
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             self?.showWindowUnderStatusItem()
+        }
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        // 应用切到前台时再次确认 CoreBluetooth 已被激活；如果用户此前点了「不允许」，
+        // 这里重新触发一次给系统再一次机会绑定权限归属。
+        if bluetoothWarmer == nil {
+            warmUpCoreBluetooth()
+        }
+    }
+
+    private func warmUpCoreBluetooth() {
+        // 只持有一个 nil-delegate 的 manager；目的就是让 CoreBluetooth 初始化 + 系统把它
+        // 绑定到当前 .app 的 Bundle ID。真正的扫描 / 连接由后端 bleak 走 CoreBluetooth 完成。
+        if bluetoothWarmer == nil {
+            bluetoothWarmer = CBCentralManager(delegate: nil, queue: nil)
         }
     }
 

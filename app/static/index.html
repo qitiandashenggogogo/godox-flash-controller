@@ -264,6 +264,19 @@
       color: var(--accent-godox);
       padding: 0 10px;
     }
+    .channel-val-clickable {
+      cursor: pointer;
+      padding: 2px 10px;
+      border-radius: 6px;
+      transition: background-color 0.15s ease;
+    }
+    .channel-val-clickable:hover {
+      background: var(--bg-hover);
+    }
+    .channel-val-clickable:focus {
+      outline: 2px solid var(--accent-godox);
+      outline-offset: 1px;
+    }
     .mini-btn {
       background: var(--btn-bg);
       border: 1px solid var(--border-subtle);
@@ -752,7 +765,7 @@
         <span class="toolbar-label">无线频道 (CH)</span>
         <div class="channel-box">
           <button class="mini-btn" id="channelDownBtn" onclick="stepChannel(-1)">-</button>
-          <span class="channel-val" id="channelDisplay">CH 06</span>
+          <span class="channel-val channel-val-clickable" id="channelDisplay" role="button" tabindex="0" title="点击输入 1-32 直接修改频道" onclick="promptChangeChannel()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();promptChangeChannel();}">CH 06</span>
           <button class="mini-btn" id="channelUpBtn" onclick="stepChannel(1)">+</button>
         </div>
       </div>
@@ -1364,6 +1377,33 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ channel: newCh })
       });
+    }
+
+    // 点击频道数字直接输入 1-32 修改；走和 +/- 完全相同的 BLE 写入链路。
+    // 后端已在 /api/set_channel 校验范围，超范围返 400。
+    async function promptChangeChannel() {
+      if (!requireDeviceConnection("修改频道")) return;
+      const current = appState.channel || 1;
+      const raw = window.prompt("输入新无线频道（1-32）", String(current));
+      if (raw === null) return; // 用户取消
+      const trimmed = raw.trim();
+      if (!trimmed) return;
+      const parsed = parseInt(trimmed, 10);
+      if (!Number.isFinite(parsed) || parsed < 1 || parsed > 32) {
+        alert("频道必须在 1 到 32 之间");
+        return;
+      }
+      if (parsed === current) return; // 无变化
+      appState.channel = parsed;
+      document.getElementById("channelDisplay").textContent = `CH ${String(parsed).padStart(2, '0')}`;
+      const response = await fetch('/api/set_channel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: parsed })
+      });
+      if (!response.ok) {
+        alert(`频道写入失败（HTTP ${response.status}）`);
+      }
     }
 
     async function toggleGlobalLamp() {
