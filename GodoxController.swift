@@ -269,6 +269,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return false
     }
 
+    // 点击窗口外任意位置（切到其他 App、点桌面）后自动收起浮动面板，
+    // 菜单栏应用的标准行为；再次点击菜单栏图标可重新唤出。
+    func applicationDidResignActive(_ notification: Notification) {
+        window?.orderOut(nil)
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         serverProcess?.terminate()
     }
