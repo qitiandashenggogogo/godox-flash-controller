@@ -2,6 +2,12 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-23 打 universal2 包时 pydantic-core 只发了分架构 wheel，PyInstaller 收集不到 x86_64 版
+
+- **问题描述**：`build-app.sh --bundle-backend` 加 `--target-architecture universal2` 后，打出的包里 `pydantic_core/_pydantic_core.*.so` 仍是 arm64 单架构，Intel Mac 上会 import 失败；用 `pip download --platform macosx_10_13_universal2` 想直接下 universal wheel 时报「from versions: 0.0.1」。
+- **原因分析**：pydantic-core 只发布分架构 wheel（`macosx_11_0_arm64` / `macosx_10_12_x86_64`），没有 universal2 wheel，所以 venv 里本来就只有 arm64 的 .so，PyInstaller 原样收集，universal2 打包缺一块拼图。
+- **解决方案**：单独 `pip download pydantic-core==<当前版本> --platform macosx_10_12_x86_64 --python-version 3.12 --no-deps -d <临时目录>`，解出 x86_64 的 .so，用 `lipo -create` 与 venv 里的 arm64 .so 合成 fat 二进制后覆盖回 venv（留 .bak 备份）；随后 PyInstaller 就能收集到 universal2 .so。验证：构建后 `find 包内 -name "*.so" | xargs lipo -info` 全部显示 x86_64+arm64，并用 `arch -x86_64 <后端二进制>` 在 Rosetta 下实测启动 + curl /api/health。
+
 ## 2026-09-23 用 SVG 官方标志做 App 图标，qlmanage 转出的 PNG 带白底且内容缩在角落
 
 - **问题描述**：想把 `assets/icon/godox.svg` 合成图标 PNG，先用 `qlmanage -t -s` 把 SVG 转 PNG 再拿 AppKit 合成，结果转出的图是不透明白底、标志只在左上角一小块，合成出来的图标是白方块里一个迷你 logo。
