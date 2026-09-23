@@ -40,4 +40,24 @@ if [ "$bundle_backend" = true ]; then
     cp -R dist/GodoxControllerBackend "Godox Controller.app/Contents/Resources/backend"
 fi
 
+# 自签证书签名（修复 TCC 蓝牙授权跨构建失效）：
+# adhoc 签名每次构建 cdhash 都变，TCC 按指纹记身份，旧授权全部作废。
+# 改用稳定的自签证书 "Godox Dev"，TCC 按证书指纹匹配，授权永久有效。
+# 从里到外逐层签：先动态库 → 后端可执行文件 → Swift 壳 → 整个 .app。
+SIGN_IDENTITY="Godox Dev"
+APP="Godox Controller.app"
+if security find-identity -p codesigning 2>/dev/null | grep -q "$SIGN_IDENTITY"; then
+    echo "使用证书 \"$SIGN_IDENTITY\" 从里到外签名（蓝牙授权跨构建保留）..."
+    if [ -d "$APP/Contents/Resources/backend" ]; then
+        find "$APP/Contents/Resources/backend" \( -name "*.so" -o -name "*.dylib" \) \
+            -exec codesign --force --sign "$SIGN_IDENTITY" {} +
+        codesign --force --sign "$SIGN_IDENTITY" "$APP/Contents/Resources/backend/GodoxControllerBackend"
+    fi
+    codesign --force --sign "$SIGN_IDENTITY" "$APP/Contents/MacOS/GodoxController"
+    codesign --force --sign "$SIGN_IDENTITY" "$APP"
+    echo "签名完成（证书：$SIGN_IDENTITY）"
+else
+    echo "未找到 \"$SIGN_IDENTITY\" 证书，跳过签名（蓝牙授权将无法跨构建保留）"
+fi
+
 echo "构建完成：Godox Controller.app"
