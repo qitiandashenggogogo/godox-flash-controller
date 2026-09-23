@@ -108,6 +108,31 @@
     .btn-danger { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
     .btn-danger:hover { background: #991b1b; }
     .btn-active { background: #3b4252; border-color: var(--accent-godox); color: #fff; }
+    button:disabled, input:disabled {
+      cursor: not-allowed;
+      opacity: 0.42;
+      filter: grayscale(0.35);
+    }
+
+    .device-state-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: -4px 0 16px;
+      padding: 11px 14px;
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--accent-godox);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+    .device-state-banner strong { color: var(--text-main); }
+    .device-state-banner.offline { border-left-color: var(--accent-red); background: #22191b; }
+    .device-state-banner.offline strong { color: #ffb4ae; }
+    .device-state-banner.online { border-left-color: var(--accent-green); }
+    .device-state-icon { font-size: 16px; line-height: 1.3; }
 
     /* Studio Control Toolbar */
     .toolbar {
@@ -188,31 +213,53 @@
       color: var(--text-main);
     }
 
-    /* Action Row */
-    .action-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      gap: 12px;
+    .device-action-area {
+      margin: 0 0 20px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      background: var(--bg-surface);
     }
+    .group-navigation-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .device-action-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .device-action-label {
+      margin-right: auto;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .sync-device-btn { background: var(--accent-godox); color: #18120a; border-color: var(--accent-godox); font-weight: 700; }
+    .sync-device-btn:hover { background: var(--accent-godox-hover); }
+    .sync-device-btn:disabled { background: #252b37; color: var(--text-muted); border-color: var(--border-subtle); }
+    .device-action-row form { display: inline-flex; }
     .test-fire-btn {
-      background: #c0392b;
-      color: #fff;
-      border: none;
-      padding: 12px 28px;
-      border-radius: 8px;
-      font-size: 15px;
+      background: #8f6218;
+      color: #fff8eb;
+      border: 1px solid #bd8629;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(192, 57, 43, 0.4);
+      box-shadow: none;
       display: flex;
       align-items: center;
       gap: 10px;
       transition: all 0.15s;
     }
-    .test-fire-btn:hover { background: #e74c3c; transform: translateY(-1px); }
-    .test-fire-btn:active { transform: translateY(1px); }
+    .test-fire-btn:hover { background: #a8751b; }
 
     .action-feedback {
       display: none;
@@ -325,8 +372,9 @@
       border-color: #3f4758;
     }
     .group-card.off {
-      opacity: 0.55;
-      border-color: #20242e;
+      opacity: 0.72;
+      border-color: #343946;
+      background: #171a21;
     }
     .group-header {
       display: flex;
@@ -375,6 +423,20 @@
     .power-val-box:hover {
       background: #252b37;
       border-color: #3e485e;
+    }
+    .power-val-box.is-disabled { cursor: not-allowed; opacity: 0.5; }
+    .power-val-box.is-disabled:hover { background: transparent; border-color: transparent; }
+    .toggle-chip {
+      border: 1px solid transparent;
+      font: inherit;
+      text-align: left;
+    }
+    .toggle-chip:disabled { cursor: not-allowed; }
+
+    @media (max-width: 760px) {
+      .device-action-row { align-items: stretch; flex-wrap: wrap; }
+      .device-action-label { width: 100%; }
+      .device-action-row form, .device-action-row > button { flex: 1 1 180px; justify-content: center; }
     }
     .power-val-main {
       font-size: 42px;
@@ -577,13 +639,18 @@
       </div>
     </header>
 
+    <div class="device-state-banner offline" id="deviceStateBanner" role="status" aria-live="polite">
+      <span class="device-state-icon" id="deviceStateIcon">●</span>
+      <span id="deviceStateText"><strong>未连接引闪器。</strong>当前调整只保存在电脑，不会控制引闪器。</span>
+    </div>
+
     <div class="toolbar">
       <div class="toolbar-group">
         <span class="toolbar-label">无线频道 (CH)</span>
         <div class="channel-box">
-          <button class="mini-btn" onclick="stepChannel(-1)">-</button>
+          <button class="mini-btn" id="channelDownBtn" onclick="stepChannel(-1)">-</button>
           <span class="channel-val" id="channelDisplay">CH 06</span>
-          <button class="mini-btn" onclick="stepChannel(1)">+</button>
+          <button class="mini-btn" id="channelUpBtn" onclick="stepChannel(1)">+</button>
         </div>
       </div>
 
@@ -609,26 +676,31 @@
       </select>
       <button class="btn" onclick="openPresetModal()">＋ 保存当前为方案</button>
       <button class="btn" onclick="applySelectedPreset()">载入方案</button>
-      <button class="btn" onclick="setSelectedPresetDefault()">设为默认</button>
-      <button class="btn" onclick="applyDefaultPreset()">恢复默认方案</button>
-      <button class="btn btn-danger" onclick="deleteSelectedPreset()">删除</button>
+      <button class="btn" onclick="setSelectedPresetDefault()">设为开机默认</button>
+      <button class="btn" onclick="applyDefaultPreset()">载入开机默认</button>
+      <button class="btn btn-danger" id="btnDeletePreset" onclick="deleteSelectedPreset()" disabled>删除</button>
       <span class="preset-hint">方案只载入桌面；需点“同步”才写入引闪器</span>
     </div>
 
-    <div class="action-row">
+    <div class="device-action-area">
+      <div class="group-navigation-row">
       <div class="group-nav-tabs" id="groupTabsContainer">
         <!-- Injected by JS -->
       </div>
+      </div>
 
-      <form id="syncForm" method="POST" action="/api/sync_to_device_form" style="display:inline-block">
-        <button type="submit" class="btn" id="btnSyncDevice" title="把桌面当前全部灯位配置整体写入实体引闪器（接管控制权）">⇓ 一键同步到引闪器</button>
+      <div class="device-action-row">
+        <span class="device-action-label">设备动作（连接后才会写入引闪器）</span>
+      <form id="syncForm" method="POST" action="/api/sync_to_device_form">
+        <button type="submit" class="btn sync-device-btn" id="btnSyncDevice" title="把桌面当前全部灯位配置整体写入实体引闪器（接管控制权）">⇓ 同步到引闪器</button>
       </form>
-      <form id="offForm" method="POST" action="/api/all_off_form" style="display:inline-block; margin-left:12px">
+      <form id="offForm" method="POST" action="/api/all_off_form">
         <button type="submit" class="btn btn-danger" id="btnAllOff" title="关闭所有组别的闪光输出；再次点击会恢复关闭前的状态">⏻ 一键全局 OFF</button>
       </form>
-      <button class="test-fire-btn" id="btnTestFire" style="margin-left:12px">
-        ⚡ 立即试闪 (TEST FIRE)
+      <button class="test-fire-btn" id="btnTestFire">
+        ⚡ 试闪 (TEST FIRE)
       </button>
+      </div>
     </div>
 
     <div id="actionFeedback" class="action-feedback" role="status" aria-live="polite"></div>
@@ -774,6 +846,19 @@
         btn.className = "btn btn-primary";
       }
 
+      const deviceBanner = document.getElementById("deviceStateBanner");
+      const deviceText = document.getElementById("deviceStateText");
+      const deviceIcon = document.getElementById("deviceStateIcon");
+      if (appState.connected) {
+        deviceBanner.className = "device-state-banner online";
+        deviceIcon.textContent = "●";
+        deviceText.innerHTML = "<strong>已连接引闪器。</strong>单组调整会立即写入；载入方案仅改桌面，点“同步”才整体写入。";
+      } else {
+        deviceBanner.className = "device-state-banner offline";
+        deviceIcon.textContent = "!";
+        deviceText.innerHTML = "<strong>未连接引闪器。</strong>当前调整只保存在电脑，不会控制引闪器。";
+      }
+
       document.getElementById("channelDisplay").textContent = `CH ${String(appState.channel).padStart(2, '0')}`;
 
       document.getElementById("modeDual").className = "seg-btn " + (appState.power_display_mode === 'dual' ? 'active' : '');
@@ -799,11 +884,29 @@
         offBtn.title = "关闭所有组别的闪光输出；再次点击会恢复关闭前的状态";
       }
 
+      const deviceControlIds = ["channelDownBtn", "channelUpBtn", "globalLampBtn", "globalSoundBtn", "btnSyncDevice", "btnAllOff", "btnTestFire"];
+      deviceControlIds.forEach(function (id) {
+        const control = document.getElementById(id);
+        if (control) control.disabled = !appState.connected;
+      });
+      document.querySelectorAll("#allAdjustBar button").forEach(function (button) {
+        const hasActiveGroup = appState.visible_groups.some(function (g) { return appState.groups[g] && appState.groups[g].mode !== "OFF"; });
+        button.disabled = !appState.connected || !hasActiveGroup;
+      });
+      const deletePresetBtn = document.getElementById("btnDeletePreset");
+      if (deletePresetBtn) deletePresetBtn.disabled = !selectedPresetId;
+
       renderTabs();
       renderPresets();
       document.getElementById("allAdjustBar").style.display = (appState.active_group === "ALL" ? "flex" : "none");
 
       renderGroups();
+    }
+
+    function requireDeviceConnection(actionName) {
+      if (appState.connected) return true;
+      showActionFeedback("× 未连接：无法" + actionName + "。请先连接引闪器。", "error", 8000);
+      return false;
     }
 
     function renderPresets() {
@@ -819,10 +922,14 @@
       });
       selectedPresetId = appState.presets.some(function (preset) { return preset.id === existing; }) ? existing : "";
       select.value = selectedPresetId;
+      const deletePresetBtn = document.getElementById("btnDeletePreset");
+      if (deletePresetBtn) deletePresetBtn.disabled = !selectedPresetId;
     }
 
     function selectPreset(id) {
       selectedPresetId = id;
+      const deletePresetBtn = document.getElementById("btnDeletePreset");
+      if (deletePresetBtn) deletePresetBtn.disabled = !selectedPresetId;
     }
 
     function openPresetModal() {
@@ -957,6 +1064,8 @@
         const grp = appState.groups[g] || { mode: "M", power: "1/64", decimal_power: "4.0", dec_val: 40, sound: false, lamp: false };
         const isOff = grp.mode === "OFF";
         const isTtl = grp.mode === "TTL";
+        const canWriteGroup = appState.connected;
+        const canAdjustPower = canWriteGroup && !isOff && !isTtl;
 
         let mainText = grp.power;
         let subText = `数字值: ${grp.decimal_power}`;
@@ -985,18 +1094,18 @@
         let stepperHtml = "";
         if (appState.power_display_mode === "decimal") {
           stepperHtml = `
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', -10)" title="-1.0 档">-1.0</button>
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', -1)" title="-0.1 档">-0.1</button>
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', 1)" title="+0.1 档">+0.1</button>
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', 10)" title="+1.0 档">+1.0</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', -10)" title="-1.0 档">-1.0</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', -1)" title="-0.1 档">-0.1</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 1)" title="+0.1 档">+0.1</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 10)" title="+1.0 档">+1.0</button>
           `;
         } else {
           stepperHtml = `
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', -10)" title="-1.0 档">-1.0 档</button>
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', -3)" title="-1/3 档">-1/3 档</button>
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', 1)" title="+0.1 档">+0.1 档</button>
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', 3)" title="+1/3 档">+1/3 档</button>
-            <button class="stepper-btn" onclick="stepGroupDec('${g}', 10)" title="+1.0 档">+1.0 档</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', -10)" title="-1.0 档">-1.0 档</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', -3)" title="-1/3 档">-1/3 档</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 1)" title="+0.1 档">+0.1 档</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 3)" title="+1/3 档">+1/3 档</button>
+            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 10)" title="+1.0 档">+1.0 档</button>
           `;
         }
 
@@ -1009,9 +1118,9 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <div class="seg-control">
-                <button class="seg-btn ${grp.mode === 'M' ? 'active' : ''}" onclick="setGroupMode('${g}', 'M')">M</button>
-                <button class="seg-btn ${grp.mode === 'TTL' ? 'active' : ''}" onclick="setGroupMode('${g}', 'TTL')">TTL</button>
-                <button class="seg-btn ${grp.mode === 'OFF' ? 'active' : ''}" onclick="setGroupMode('${g}', 'OFF')">OFF</button>
+                <button class="seg-btn ${grp.mode === 'M' ? 'active' : ''}" ${canWriteGroup ? '' : 'disabled'} onclick="setGroupMode('${g}', 'M')">M</button>
+                <button class="seg-btn ${grp.mode === 'TTL' ? 'active' : ''}" ${canWriteGroup ? '' : 'disabled'} onclick="setGroupMode('${g}', 'TTL')">TTL</button>
+                <button class="seg-btn ${grp.mode === 'OFF' ? 'active' : ''}" ${canWriteGroup && !isOff ? '' : 'disabled'} onclick="setGroupMode('${g}', 'OFF')">OFF</button>
               </div>
               <button class="remove-group-btn" onclick="removeGroup('${g}')" title="从面板中隐藏该组">✕</button>
             </div>
@@ -1019,30 +1128,30 @@
 
           <div class="power-display-row">
             <div class="power-label">${isTtl ? 'TTL 模式' : '输出功率'}</div>
-            <div class="power-val-box" id="powerBox_${g}" onclick="enablePowerInput('${g}')" title="点击直接键盘键入功率数值">
+            <div class="power-val-box ${canAdjustPower ? '' : 'is-disabled'}" id="powerBox_${g}" onclick="enablePowerInput('${g}')" title="点击直接键盘键入功率数值">
               <div class="power-val-main" id="powerValMain_${g}">${mainText}</div>
               ${subText ? `<div class="power-val-sub">${subText}</div>` : ''}
             </div>
           </div>
 
-          <div style="${isOff || isTtl ? 'opacity: 0.25; pointer-events: none;' : ''}">
+          <div style="${canAdjustPower ? '' : 'opacity: 0.25; pointer-events: none;'}">
             <div class="stepper-row">
               ${stepperHtml}
             </div>
 
             <div class="slider-row">
-              <input type="range" min="10" max="100" step="1" value="${sliderVal}"
+              <input type="range" min="10" max="100" step="1" value="${sliderVal}" ${canAdjustPower ? '' : 'disabled'}
                      oninput="onSliderChange('${g}', this.value)">
             </div>
           </div>
 
           <div class="group-footer">
-            <div class="toggle-chip ${grp.lamp ? 'active' : ''}" onclick="toggleGroupLamp('${g}')">
+            <button class="toggle-chip ${grp.lamp ? 'active' : ''}" ${canWriteGroup && !isOff ? '' : 'disabled'} onclick="toggleGroupLamp('${g}')">
               💡 造型灯: ${grp.lamp ? '开启' : '关闭'}
-            </div>
-            <div class="toggle-chip ${grp.sound ? 'active' : ''}" onclick="toggleGroupSound('${g}')">
+            </button>
+            <button class="toggle-chip ${grp.sound ? 'active' : ''}" ${canWriteGroup && !isOff ? '' : 'disabled'} onclick="toggleGroupSound('${g}')">
               🔔 回电音: ${grp.sound ? '开启' : '关闭'}
-            </div>
+            </button>
           </div>
         `;
         container.appendChild(card);
@@ -1051,7 +1160,7 @@
 
     function enablePowerInput(g) {
       const grp = appState.groups[g];
-      if (grp.mode === "OFF" || grp.mode === "TTL") return;
+      if (!requireDeviceConnection("调整功率") || grp.mode === "OFF" || grp.mode === "TTL") return;
       editingGroup = g;
       const box = document.getElementById("powerBox_" + g);
       const currentText = appState.power_display_mode === "decimal" ? grp.decimal_power : grp.power;
@@ -1120,6 +1229,7 @@
     }
 
     async function stepChannel(delta) {
+      if (!requireDeviceConnection("修改频道")) return;
       let newCh = Math.max(1, Math.min(32, appState.channel + delta));
       appState.channel = newCh;
       document.getElementById("channelDisplay").textContent = `CH ${String(newCh).padStart(2, '0')}`;
@@ -1131,6 +1241,7 @@
     }
 
     async function toggleGlobalLamp() {
+      if (!requireDeviceConnection("切换全局造型灯")) return;
       appState.global_lamp = !appState.global_lamp;
       updateUI();
       await fetch('/api/set_global_lamp', {
@@ -1141,6 +1252,7 @@
     }
 
     async function toggleGlobalSound() {
+      if (!requireDeviceConnection("切换全局蜂鸣音")) return;
       appState.global_sound = !appState.global_sound;
       updateUI();
       await fetch('/api/set_global_sound', {
@@ -1151,6 +1263,11 @@
     }
 
     async function adjustAll(delta) {
+      if (!requireDeviceConnection("全组调光")) return;
+      if (!appState.visible_groups.some(function (g) { return appState.groups[g] && appState.groups[g].mode !== "OFF"; })) {
+        showActionFeedback("× 当前没有已开启的组别可调光", "error", 6000);
+        return;
+      }
       await fetch('/api/adjust_all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1160,24 +1277,28 @@
     }
 
     function setGroupMode(g, mode) {
+      if (!requireDeviceConnection("修改 " + g + " 组模式")) return;
       appState.groups[g].mode = mode;
       renderGroups();
       sendGroupUpdate(g);
     }
 
     function toggleGroupLamp(g) {
+      if (!requireDeviceConnection("切换 " + g + " 组造型灯")) return;
       appState.groups[g].lamp = !appState.groups[g].lamp;
       renderGroups();
       sendGroupUpdate(g);
     }
 
     function toggleGroupSound(g) {
+      if (!requireDeviceConnection("切换 " + g + " 组回电音")) return;
       appState.groups[g].sound = !appState.groups[g].sound;
       renderGroups();
       sendGroupUpdate(g);
     }
 
     function onSliderChange(g, val) {
+      if (!requireDeviceConnection("调整 " + g + " 组功率")) return;
       const dec_val = parseInt(val);
       appState.groups[g].dec_val = dec_val;
       appState.groups[g].decimal_power = (dec_val / 10.0).toFixed(1);
@@ -1190,6 +1311,7 @@
     }
 
     function stepGroupDec(g, delta) {
+      if (!requireDeviceConnection("调整 " + g + " 组功率")) return;
       const current = appState.groups[g].dec_val || 40;
       const nextVal = Math.max(10, Math.min(100, current + delta));
       appState.groups[g].dec_val = nextVal;
@@ -1199,10 +1321,12 @@
     }
 
     async function sendGroupUpdate(g, customDecVal = null) {
+      if (!requireDeviceConnection("写入 " + g + " 组")) return;
       const grp = appState.groups[g];
       const dec = customDecVal !== null ? customDecVal : grp.dec_val;
       try {
-        await fetch('/api/set_group', {
+        showActionFeedback("正在写入 " + g + " 组…", "working");
+        const response = await fetch('/api/set_group', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1213,8 +1337,11 @@
             lamp: grp.lamp
           })
         });
+        const result = await response.json();
+        showActionFeedback(result.success ? "✓ " + g + " 组写入指令已送达引闪器" : "× " + g + " 组写入失败：请重新连接后重试", result.success ? "success" : "error", result.success ? 5000 : 9000);
       } catch (e) {
         console.error("sendGroupUpdate error", e);
+        showActionFeedback("× 写入失败：请重新连接后重试", "error", 9000);
       }
     }
 
