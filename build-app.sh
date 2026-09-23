@@ -12,6 +12,9 @@ swiftc -O -swift-version 5 -o GodoxController GodoxController.swift -framework W
 mkdir -p "Godox Controller.app/Contents/MacOS" "Godox Controller.app/Contents/Resources"
 cp Info.plist "Godox Controller.app/Contents/"
 cp GodoxController "Godox Controller.app/Contents/MacOS/GodoxController"
+if [ -f assets/icon/GodoxController.icns ]; then
+    cp assets/icon/GodoxController.icns "Godox Controller.app/Contents/Resources/GodoxController.icns"
+fi
 
 if [ "$bundle_backend" = true ]; then
     if [ ! -x ".venv/bin/python" ]; then
