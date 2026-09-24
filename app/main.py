@@ -136,25 +136,25 @@ async def create_preset(req: PresetCreateRequest):
 @app.post("/api/presets/{preset_id}/apply")
 async def apply_preset(preset_id: str):
     if not manager.apply_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该方案")
+        raise HTTPException(status_code=404, detail="未找到该预设")
     return {"success": True, "status": manager.get_status()}
 
 @app.post("/api/presets/{preset_id}/default")
 async def set_default_preset(preset_id: str):
     if not manager.set_default_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该方案")
+        raise HTTPException(status_code=404, detail="未找到该预设")
     return {"success": True, "status": manager.get_status()}
 
 @app.post("/api/presets/apply_default")
 async def apply_default_preset():
     if not manager.apply_default_preset():
-        raise HTTPException(status_code=404, detail="尚未设定默认方案")
+        raise HTTPException(status_code=404, detail="尚未设定默认预设")
     return {"success": True, "status": manager.get_status()}
 
 @app.delete("/api/presets/{preset_id}")
 async def delete_preset(preset_id: str):
     if not manager.delete_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该方案")
+        raise HTTPException(status_code=404, detail="未找到该预设")
     return {"success": True, "status": manager.get_status()}
 
 

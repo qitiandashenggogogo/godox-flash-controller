@@ -13,7 +13,7 @@ logger = logging.getLogger("godox_ble")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 LEGACY_STATE_FILE = PROJECT_ROOT / "config" / "studio_state.json"
-# 配置不能写在 .app 或源码目录：升级/替换应用时，用户的布光方案必须保留。
+# 配置不能写在 .app 或源码目录：升级/替换应用时，用户的布光预设必须保留。
 # 环境变量仅供自动化验证使用，正常用户始终使用自己的 Application Support 目录。
 STATE_DIR = Path(os.environ.get("GODOX_CONTROLLER_STATE_DIR", "")) if os.environ.get("GODOX_CONTROLLER_STATE_DIR") else Path.home() / "Library" / "Application Support" / "Godox Controller"
 STATE_FILE = STATE_DIR / "studio_state.json"
@@ -26,6 +26,11 @@ CHAR_FEC8 = "0000fec8-0000-1000-8000-00805f9b34fb"
 SERVICE_FFF0 = "0000fff0-0000-1000-8000-00805f9b34fb"
 CHAR_FFF1 = "0000fff1-0000-1000-8000-00805f9b34fb"
 CHAR_FFF4 = "0000fff4-0000-1000-8000-00805f9b34fb"
+
+# 标准 BLE 电量服务。X3 Pro 的已知 GATT 枚举没有暴露它；保留可选读取，
+# 这样同族硬件若提供标准电量特征时可以直接显示，未提供时不会伪造数值。
+SERVICE_BATTERY = "0000180f-0000-1000-8000-00805f9b34fb"
+CHAR_BATTERY_LEVEL = "00002a19-0000-1000-8000-00805f9b34fb"
 
 CRC8_TABLE = [
     0x00, 0x5e, 0xbc, 0xe2, 0x61, 0x3f, 0xdd, 0x83, 0xc2, 0x9c, 0x7e, 0x20, 0xa3, 0xfd, 0x1f, 0x41,
@@ -102,6 +107,9 @@ class BleManager:
         self.device_name: str = "未选择引闪器"
         self.is_connected: bool = False
         self.last_rssi: Optional[int] = None
+        self.battery_level: Optional[int] = None
+        self.battery_supported: Optional[bool] = None
+        self.battery_refresh_task: Optional[asyncio.Task] = None
         self.last_ack: Optional[str] = None
         self.last_msg: str = "空闲"
         self.reconnect_task: Optional[asyncio.Task] = None
@@ -140,7 +148,7 @@ class BleManager:
         self.load_state_from_disk()
 
     def _current_state(self) -> Dict[str, Any]:
-        """仅保存桌面工作状态；命名方案会保存这份状态的独立快照。"""
+        """仅保存桌面工作状态；命名预设会保存这份状态的独立快照。"""
         return {
             "channel": self.channel,
             "wireless_id": self.wireless_id,
@@ -236,11 +244,11 @@ class BleManager:
     def create_preset(self, name: str) -> Dict[str, Any]:
         clean_name = name.strip()
         if not clean_name:
-            raise ValueError("方案名称不能为空")
+            raise ValueError("预设名称不能为空")
         if len(clean_name) > 40:
-            raise ValueError("方案名称不能超过 40 个字符")
+            raise ValueError("预设名称不能超过 40 个字符")
         if any(p["name"] == clean_name for p in self.presets):
-            raise ValueError("已有同名方案，请换一个名称")
+            raise ValueError("已有同名预设，请换一个名称")
         preset = {"id": uuid.uuid4().hex, "name": clean_name, "state": self._current_state()}
         self.presets.append(preset)
         self.save_state_to_disk()
@@ -310,10 +318,47 @@ class BleManager:
         logger.info("Received FFF4 notify: %s (%s)", self.last_test_fire_ack, data.hex(" "))
         self._test_fire_ack_event.set()
 
+    @staticmethod
+    def _parse_battery_level(data: bytes) -> Optional[int]:
+        if not data:
+            return None
+        level = int(data[0])
+        return level if 0 <= level <= 100 else None
+
+    def _on_battery_notify(self, sender, data: bytearray):
+        level = self._parse_battery_level(bytes(data))
+        if level is not None:
+            self.battery_level = level
+            self.battery_supported = True
+            logger.info("Received battery level: %s%%", level)
+
+    async def _refresh_battery_level(self) -> Optional[int]:
+        if not self.is_connected or not self.client:
+            return None
+        try:
+            data = await self.client.read_gatt_char(CHAR_BATTERY_LEVEL)
+            level = self._parse_battery_level(bytes(data))
+            if level is None:
+                raise ValueError("invalid battery level")
+            self.battery_level = level
+            self.battery_supported = True
+            return level
+        except Exception as exc:
+            self.battery_supported = False
+            logger.debug("Battery level is unavailable: %s", exc)
+            return None
+
+    async def _battery_refresh_loop(self):
+        while self.is_connected and self.client:
+            await self._refresh_battery_level()
+            await asyncio.sleep(30.0)
+
     def _on_disconnected(self, client):
         logger.warning("BLE device disconnected!")
         self.is_connected = False
         self.last_msg = "已断开连接"
+        if self.battery_refresh_task and not self.battery_refresh_task.done():
+            self.battery_refresh_task.cancel()
         if self.auto_reconnect and not (self.reconnect_task and not self.reconnect_task.done()):
             self.reconnect_task = asyncio.create_task(self._reconnect_loop())
 
@@ -349,14 +394,22 @@ class BleManager:
                     "is_current": True
                 })
         self.discovered_devices = results
+        self.last_msg = f"扫描完成：发现 {len(results)} 台神牛引闪器" if results else "扫描完成：未发现神牛引闪器"
         return results
 
     async def connect(self, target_address: Optional[str] = None) -> bool:
         async with self._lock:
+            self.auto_reconnect = True
             if self.client and self.client.is_connected:
                 if not target_address or target_address == self.device_address:
+                    self.last_msg = f"已连接: {self.device_name}"
                     return True
+                # 切换设备时先禁止旧连接触发自动重连，避免旧设备和新设备同时抢连接。
+                self.auto_reconnect = False
                 await self.client.disconnect()
+                self.client = None
+                self.is_connected = False
+                self.auto_reconnect = True
 
             addr = target_address or self.device_address
             if not addr:
@@ -367,8 +420,14 @@ class BleManager:
                 addr = devs[0]["address"]
                 self.device_name = devs[0]["name"]
 
+            known = next((d for d in self.discovered_devices if d.get("address") == addr), None)
+            if known and known.get("name"):
+                self.device_name = known["name"]
+
             self.device_address = addr
             self.last_msg = f"正在连接 {addr}..."
+            self.battery_level = None
+            self.battery_supported = None
             try:
                 self.client = BleakClient(
                     addr,
@@ -386,18 +445,31 @@ class BleManager:
                         await self.client.start_notify(CHAR_FFF4, self._on_fff4_notify)
                     except Exception:
                         pass
+                    try:
+                        await self.client.start_notify(CHAR_BATTERY_LEVEL, self._on_battery_notify)
+                    except Exception:
+                        pass
+                    await self._refresh_battery_level()
+                    if self.battery_refresh_task and not self.battery_refresh_task.done():
+                        self.battery_refresh_task.cancel()
+                    self.battery_refresh_task = asyncio.create_task(self._battery_refresh_loop())
                     self.last_msg = f"已连接: {self.device_name}"
                     self.save_state_to_disk()
                     return True
             except Exception as e:
                 logger.error(f"Connect error: {e}")
                 self.is_connected = False
+                self.battery_level = None
+                self.battery_supported = None
                 self.last_msg = f"连接失败: {e}"
                 return False
             return False
 
     async def disconnect(self):
         self.auto_reconnect = False
+        if self.battery_refresh_task and not self.battery_refresh_task.done():
+            self.battery_refresh_task.cancel()
+        self.battery_refresh_task = None
         if self.client and self.client.is_connected:
             await self.client.disconnect()
         self.is_connected = False
@@ -675,6 +747,8 @@ class BleManager:
             "device_name": self.device_name,
             "device_address": self.device_address,
             "rssi": self.last_rssi,
+            "battery_level": self.battery_level,
+            "battery_supported": self.battery_supported,
             "last_ack": self.last_ack,
             "last_test_fire_ack": self.last_test_fire_ack,
             "message": self.last_msg,
