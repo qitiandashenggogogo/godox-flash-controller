@@ -2,6 +2,18 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-09-24 在 worktree 里构建，DMG 产物落在隐藏目录，主项目 dist/ 里"找不到新版本"
+
+- **问题描述**：v1.4 构建、验签、安装全部成功，但大盛在主项目 `dist/` 里找不到 `GodoxController-v1.4.dmg`，以为没保存到本地，没法拷给同事。
+- **原因分析**：构建是在 Cindy worktree（`.cindy-worktrees/keen-lederberg/`）里跑的，`build-app.sh` 把 DMG 输出到**当前工作目录**的 `dist/`，也就是 worktree 的隐藏目录；主项目的 `dist/` 自然不会有。
+- **解决方案**：发版流程固定加一步——构建完成后把 DMG 从 worktree `dist/` 拷回主项目 `dist/` 并用 `shasum -a 256` 双端校验一致（本次已补拷并校验通过）。**教训：凡是交付给大盛的实体文件（DMG/App），完成后必须落在他看得见的主项目目录，不要留在 worktree。**
+
+## 2026-09-23 Bash `set -u` 下变量紧邻中文标点导致签名脚本误报失败
+
+- **问题描述**：`build-app.sh --bundle-backend` 已完成内置后端封装、逐层签名和深度验签，却在最后的成功提示行报 `SIGN_IDENTITY�: unbound variable`，退出码为 1。
+- **原因分析**：`set -u` 下，`$SIGN_IDENTITY` 紧邻中文右括号时被当前 Bash/locale 组合错误地并入变量名解析。
+- **解决方案**：Shell 变量在非 ASCII 标点前统一使用边界明确的 `${SIGN_IDENTITY}` 写法；修复后完整构建退出码为 0，App 与 DMG 验签均通过。
+
 ## 2026-09-23 Cindy 会话里 rm -rf 被 Fact-Forcing Gate 反复拦截，事实摆明也过不去，改用 mv 到废纸篓一次通过
 
 - **问题描述**：清理 /tmp 下 7 项已确认的垃圾（旧签名暂存、旧 adhoc App 备份、构建日志），删除前已在回复里逐项列清单、给回滚说明、附用户原话「无用的垃圾可以清掉」，但 `rm -rf` 仍连续 3 次被 Cindy 的 Fact-Forcing Gate 钩子拦下。
