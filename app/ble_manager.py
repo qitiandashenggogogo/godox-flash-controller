@@ -109,6 +109,8 @@ class BleManager:
         self.last_rssi: Optional[int] = None
         self.battery_level: Optional[int] = None
         self.battery_supported: Optional[bool] = None
+        # 这是“电脑端 BLE 读取状态”，不是对实体 LCD 电量能力的判断。
+        self.battery_state: str = "unknown"
         self.battery_refresh_task: Optional[asyncio.Task] = None
         self.last_ack: Optional[str] = None
         self.last_msg: str = "空闲"
@@ -330,21 +332,32 @@ class BleManager:
         if level is not None:
             self.battery_level = level
             self.battery_supported = True
+            self.battery_state = "available"
             logger.info("Received battery level: %s%%", level)
 
     async def _refresh_battery_level(self) -> Optional[int]:
         if not self.is_connected or not self.client:
             return None
         try:
+            # 先区分“没有标准电量特征”和“特征存在但这次读取失败”，
+            # 避免把一次读取异常误报成设备没有电量。
+            characteristic = self.client.services.get_characteristic(CHAR_BATTERY_LEVEL)
+            if characteristic is None:
+                self.battery_supported = False
+                self.battery_state = "not_exposed"
+                logger.info("No standard BLE battery characteristic exposed by device")
+                return None
             data = await self.client.read_gatt_char(CHAR_BATTERY_LEVEL)
             level = self._parse_battery_level(bytes(data))
             if level is None:
                 raise ValueError("invalid battery level")
             self.battery_level = level
             self.battery_supported = True
+            self.battery_state = "available"
             return level
         except Exception as exc:
-            self.battery_supported = False
+            self.battery_supported = True if self.battery_supported is True else None
+            self.battery_state = "unreadable"
             logger.debug("Battery level is unavailable: %s", exc)
             return None
 
@@ -357,6 +370,7 @@ class BleManager:
         logger.warning("BLE device disconnected!")
         self.is_connected = False
         self.last_msg = "已断开连接"
+        self.battery_state = "disconnected"
         if self.battery_refresh_task and not self.battery_refresh_task.done():
             self.battery_refresh_task.cancel()
         if self.auto_reconnect and not (self.reconnect_task and not self.reconnect_task.done()):
@@ -428,6 +442,7 @@ class BleManager:
             self.last_msg = f"正在连接 {addr}..."
             self.battery_level = None
             self.battery_supported = None
+            self.battery_state = "reading"
             try:
                 self.client = BleakClient(
                     addr,
@@ -461,6 +476,7 @@ class BleManager:
                 self.is_connected = False
                 self.battery_level = None
                 self.battery_supported = None
+                self.battery_state = "unknown"
                 self.last_msg = f"连接失败: {e}"
                 return False
             return False
@@ -473,6 +489,7 @@ class BleManager:
         if self.client and self.client.is_connected:
             await self.client.disconnect()
         self.is_connected = False
+        self.battery_state = "disconnected"
         self.last_msg = "已手动断开"
 
     def add_group(self, group: str):
@@ -749,6 +766,7 @@ class BleManager:
             "rssi": self.last_rssi,
             "battery_level": self.battery_level,
             "battery_supported": self.battery_supported,
+            "battery_state": self.battery_state,
             "last_ack": self.last_ack,
             "last_test_fire_ack": self.last_test_fire_ack,
             "message": self.last_msg,
