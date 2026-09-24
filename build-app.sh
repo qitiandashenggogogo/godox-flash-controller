@@ -75,7 +75,7 @@ if security find-identity -p codesigning 2>/dev/null | grep -q "$SIGN_IDENTITY";
     rm -rf "$APP"
     mv "$STAGED_APP" "$APP"
     rm -rf "$STAGE_DIR"
-    echo "签名完成（证书：$SIGN_IDENTITY），深度验证已通过"
+    echo "签名完成（证书：${SIGN_IDENTITY}），深度验证已通过"
 else
     echo "未找到 \"$SIGN_IDENTITY\" 证书，跳过签名（蓝牙授权将无法跨构建保留）"
 fi
