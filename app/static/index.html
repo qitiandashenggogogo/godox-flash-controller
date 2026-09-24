@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>神牛引闪器桌面控制台</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       --bg-main: #0d0f12;
       --bg-surface: #15181f;
       --bg-card: #1b1f28;
+      --bg-hover: #222733;
       --border-subtle: #272c38;
       --border-focus: #3d4556;
       --text-main: #f0f3f6;
@@ -63,6 +65,7 @@
       --bg-main: #f5f6f8;
       --bg-surface: #ffffff;
       --bg-card: #ffffff;
+      --bg-hover: #eceff3;
       --border-subtle: #d9dde3;
       --border-focus: #b6bdc9;
       --text-main: #1d2129;
@@ -171,6 +174,20 @@
       border: 1px solid var(--border-subtle);
       font-size: 13px;
     }
+    .battery-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .battery-badge.available { color: var(--accent-green); border-color: var(--accent-green); }
+    .battery-badge.unavailable { color: var(--text-dim); }
     .status-dot {
       width: 8px;
       height: 8px;
@@ -276,6 +293,30 @@
     .channel-val-clickable:focus {
       outline: 2px solid var(--accent-godox);
       outline-offset: 1px;
+    }
+    .channel-inline-input {
+      width: 66px;
+      height: 28px;
+      padding: 2px 6px;
+      border: 1px solid var(--accent-godox);
+      border-radius: 5px;
+      background: var(--input-dark-bg);
+      color: var(--accent-godox);
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .channel-select {
+      min-width: 84px;
+      height: 32px;
+      padding: 4px 8px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 13px;
     }
     .mini-btn {
       background: var(--btn-bg);
@@ -404,6 +445,14 @@
       font-size: 13px;
     }
     .preset-hint { color: var(--text-dim); font-size: 12px; margin-left: auto; }
+    .scan-status {
+      min-height: 18px;
+      margin: -4px 0 10px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .scan-status.success { color: var(--accent-green); }
+    .scan-status.error { color: var(--error-text); }
 
     .group-nav-tabs {
       display: flex;
@@ -745,6 +794,7 @@
           <div class="status-dot" id="statusDot"></div>
           <span id="statusText">正在初始化...</span>
         </div>
+        <div class="battery-badge unavailable" id="batteryStatus" role="status" aria-live="polite">电量：未连接</div>
         <div class="seg-control theme-switch">
           <button class="seg-btn" data-theme-choice="system" onclick="setThemeChoice('system')">跟随系统</button>
           <button class="seg-btn" data-theme-choice="dark" onclick="setThemeChoice('dark')">深色</button>
@@ -765,9 +815,13 @@
         <span class="toolbar-label">无线频道 (CH)</span>
         <div class="channel-box">
           <button class="mini-btn" id="channelDownBtn" onclick="stepChannel(-1)">-</button>
-          <span class="channel-val channel-val-clickable" id="channelDisplay" role="button" tabindex="0" title="点击输入 1-32 直接修改频道" onclick="promptChangeChannel()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();promptChangeChannel();}">CH 06</span>
+          <button class="channel-val channel-val-clickable" id="channelDisplay" type="button" title="点击输入 1-32 直接修改频道" onclick="enableChannelInput()">CH 06</button>
+          <input class="channel-inline-input" id="channelInput" type="number" min="1" max="32" step="1" inputmode="numeric" aria-label="输入无线频道 1 到 32" hidden onkeydown="handleChannelInputKey(event)" onblur="commitChannelInput()">
           <button class="mini-btn" id="channelUpBtn" onclick="stepChannel(1)">+</button>
         </div>
+        <select class="channel-select" id="channelSelect" aria-label="选择无线频道" onchange="selectChannel(this.value)">
+          <option value="">选择频道</option>
+        </select>
       </div>
 
       <div class="toolbar-group">
@@ -785,17 +839,17 @@
       </div>
     </div>
 
-    <div class="preset-bar" aria-label="我的方案">
-      <label for="presetSelect">我的方案</label>
+    <div class="preset-bar" aria-label="我的预设">
+      <label for="presetSelect">我的预设</label>
       <select class="preset-select" id="presetSelect" onchange="selectPreset(this.value)">
-        <option value="">选择已保存的方案…</option>
+        <option value="">选择已保存的预设…</option>
       </select>
-      <button class="btn" onclick="openPresetModal()">＋ 保存当前为方案</button>
-      <button class="btn" onclick="applySelectedPreset()">载入方案</button>
-      <button class="btn" onclick="setSelectedPresetDefault()">设为开机默认</button>
-      <button class="btn" onclick="applyDefaultPreset()">载入开机默认</button>
+      <button class="btn" onclick="openPresetModal()">＋ 保存当前为预设</button>
+      <button class="btn" onclick="applySelectedPreset()">载入预设</button>
+      <button class="btn" onclick="setSelectedPresetDefault()">设为开机默认预设</button>
+      <button class="btn" onclick="applyDefaultPreset()">载入开机默认预设</button>
       <button class="btn btn-danger" id="btnDeletePreset" onclick="deleteSelectedPreset()" disabled>删除</button>
-      <span class="preset-hint">方案只载入桌面；需点“同步”才写入引闪器</span>
+      <span class="preset-hint">预设只载入桌面；需点“同步”才写入引闪器</span>
     </div>
 
     <div class="device-action-area">
@@ -837,7 +891,7 @@
     </div>
 
     <div class="notice-bar">
-      <strong>同步模型说明（实测结论）</strong>：X3 Pro 蓝牙是<strong>单向命令通道</strong>（与官方 App 同机制），实体端不回传状态——桌面上显示的数值以「本机记忆」为准，连接后不会覆盖你的实体设置；你在桌面做的任何调整会立即写入实体。如需以桌面配置整体接管实体，点「⇓ 一键同步到引闪器」。
+      <strong>同步模型说明（实测结论）</strong>：X3 Pro 蓝牙是<strong>单向命令通道</strong>（与官方 App 同机制），实体端不回传频道、功率等状态——桌面上显示的数值以「本机记忆」为准，连接后不会覆盖你的实体设置；你在桌面做的任何调整会立即写入实体。如需以桌面配置整体接管实体，点「⇓ 一键同步到引闪器」。电量仅在设备提供标准 BLE Battery Service 时显示，否则会标为“设备未提供”。
     </div>
 
     <footer>
@@ -858,8 +912,9 @@
       <div class="device-list" id="deviceList">
         <div style="font-size: 13px; color: var(--text-dim); text-align: center; padding: 20px;">正在扫描...</div>
       </div>
+      <div class="scan-status" id="deviceScanStatus" role="status" aria-live="polite">正在准备扫描…</div>
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn" onclick="rescanDevices()">重新扫描</button>
+        <button class="btn" id="rescanDevicesBtn" onclick="rescanDevices()">重新扫描</button>
         <button class="btn" onclick="closeDeviceModal()">关闭</button>
       </div>
     </div>
@@ -885,15 +940,15 @@
   <div class="modal-overlay" id="presetModal">
     <div class="modal-content" style="max-width: 420px;">
       <div class="modal-header">
-        <div class="modal-title">保存当前布光方案</div>
+        <div class="modal-title">保存当前布光预设</div>
         <button class="remove-group-btn" onclick="closePresetModal()">✕</button>
       </div>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">会保存频道、全局开关、显示格式和每个组别的当前设置；不会立即写入实体引闪器。</p>
-      <label for="presetNameInput" style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;">方案名称</label>
+      <label for="presetNameInput" style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;">预设名称</label>
       <input id="presetNameInput" type="text" maxlength="40" placeholder="例如：棚拍人像 · 柔光两灯" style="width:100%; background:var(--input-dark-bg); color:var(--text-main); border:1px solid var(--border-focus); border-radius:6px; padding:10px; font-size:14px;" onkeydown="if(event.key === 'Enter') createPreset()">
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
         <button class="btn" onclick="closePresetModal()">取消</button>
-        <button class="btn btn-primary" onclick="createPreset()">保存方案</button>
+        <button class="btn btn-primary" onclick="createPreset()">保存预设</button>
       </div>
     </div>
   </div>
@@ -938,11 +993,14 @@
       discovered_devices: [],
       presets: [],
       default_preset_id: null,
-      can_restore_all_off: false
+      can_restore_all_off: false,
+      battery_level: null,
+      battery_supported: null
     };
 
     let debounceTimers = {};
     let editingGroup = null;
+    let editingChannel = false;
     let selectedPresetId = "";
 
     async function fetchStatus() {
@@ -953,6 +1011,8 @@
         appState.device_name = data.device_name;
         appState.device_address = data.device_address;
         appState.channel = data.channel || 6;
+        appState.battery_level = Number.isFinite(data.battery_level) ? data.battery_level : null;
+        appState.battery_supported = typeof data.battery_supported === "boolean" ? data.battery_supported : null;
         appState.global_lamp = data.global_lamp || false;
         appState.global_sound = data.global_sound || false;
         if (data.power_display_mode) appState.power_display_mode = data.power_display_mode;
@@ -985,20 +1045,42 @@
         btn.className = "btn btn-primary";
       }
 
+      const battery = document.getElementById("batteryStatus");
+      if (appState.connected && Number.isFinite(appState.battery_level)) {
+        battery.textContent = `电量：${appState.battery_level}%`;
+        battery.className = "battery-badge available";
+        battery.title = "来自实体引闪器的标准 BLE 电量特征";
+      } else if (appState.connected && appState.battery_supported === false) {
+        battery.textContent = "电量：设备未提供";
+        battery.className = "battery-badge unavailable";
+        battery.title = "当前引闪器没有暴露可读取的标准 BLE 电量特征";
+      } else if (appState.connected) {
+        battery.textContent = "电量：读取中…";
+        battery.className = "battery-badge";
+        battery.title = "正在读取实体引闪器电量";
+      } else {
+        battery.textContent = "电量：未连接";
+        battery.className = "battery-badge unavailable";
+        battery.title = "连接引闪器后读取电量";
+      }
+
       const deviceBanner = document.getElementById("deviceStateBanner");
       const deviceText = document.getElementById("deviceStateText");
       const deviceIcon = document.getElementById("deviceStateIcon");
       if (appState.connected) {
         deviceBanner.className = "device-state-banner online";
         deviceIcon.textContent = "●";
-        deviceText.innerHTML = "<strong>已连接引闪器。</strong>单组调整会立即写入；载入方案仅改桌面，点“同步”才整体写入。";
+        deviceText.innerHTML = "<strong>已连接引闪器。</strong>单组调整会立即写入；载入预设仅改桌面，点“同步”才整体写入。";
       } else {
         deviceBanner.className = "device-state-banner offline";
         deviceIcon.textContent = "!";
         deviceText.innerHTML = "<strong>未连接引闪器。</strong>当前调整只保存在电脑，不会控制引闪器。";
       }
 
-      document.getElementById("channelDisplay").textContent = `CH ${String(appState.channel).padStart(2, '0')}`;
+      if (!editingChannel) {
+        document.getElementById("channelDisplay").textContent = `CH ${String(appState.channel).padStart(2, '0')}`;
+        document.getElementById("channelSelect").value = String(appState.channel);
+      }
 
       document.getElementById("modeDual").className = "seg-btn " + (appState.power_display_mode === 'dual' ? 'active' : '');
       document.getElementById("modeFraction").className = "seg-btn " + (appState.power_display_mode === 'fraction' ? 'active' : '');
@@ -1023,7 +1105,7 @@
         offBtn.title = "关闭所有组别的闪光输出；再次点击会恢复关闭前的状态";
       }
 
-      const deviceControlIds = ["channelDownBtn", "channelUpBtn", "globalLampBtn", "globalSoundBtn", "btnSyncDevice", "btnAllOff", "btnTestFire"];
+      const deviceControlIds = ["channelDownBtn", "channelUpBtn", "channelDisplay", "channelSelect", "globalLampBtn", "globalSoundBtn", "btnSyncDevice", "btnAllOff", "btnTestFire"];
       deviceControlIds.forEach(function (id) {
         const control = document.getElementById(id);
         if (control) control.disabled = !appState.connected;
@@ -1052,7 +1134,7 @@
       const select = document.getElementById("presetSelect");
       if (!select) return;
       const existing = selectedPresetId || select.value;
-      select.innerHTML = '<option value="">选择已保存的方案…</option>';
+      select.innerHTML = '<option value="">选择已保存的预设…</option>';
       appState.presets.forEach(function (preset) {
         const option = document.createElement("option");
         option.value = preset.id;
@@ -1093,7 +1175,7 @@
       const name = input.value.trim();
       if (!name) {
         input.focus();
-        showActionFeedback("请先填写方案名称", "error", 6000);
+        showActionFeedback("请先填写预设名称", "error", 6000);
         return;
       }
       try {
@@ -1105,15 +1187,15 @@
         selectedPresetId = result.preset.id;
         closePresetModal();
         await fetchStatus();
-        showActionFeedback("✓ 已保存方案“" + result.preset.name + "”；当前设置会在下次启动自动恢复", "success", 8000);
+        showActionFeedback("✓ 已保存预设“" + result.preset.name + "”；当前设置会在下次启动自动恢复", "success", 8000);
       } catch (error) {
-        showActionFeedback("× 保存方案失败：" + error.message, "error", 10000);
+        showActionFeedback("× 保存预设失败：" + error.message, "error", 10000);
       }
     }
 
     function requireSelectedPreset() {
       if (!selectedPresetId) {
-        showActionFeedback("请先在“我的方案”中选择一个方案", "error", 6000);
+        showActionFeedback("请先在“我的预设”中选择一个预设", "error", 6000);
         return false;
       }
       return true;
@@ -1125,9 +1207,9 @@
       try {
         await apiJson("/api/presets/" + encodeURIComponent(selectedPresetId) + "/apply", { method: "POST" });
         await fetchStatus();
-        showActionFeedback("✓ 已载入“" + (selected ? selected.name : "该方案") + "”到桌面；尚未写入实体引闪器", "success", 9000);
+        showActionFeedback("✓ 已载入“" + (selected ? selected.name : "该预设") + "”到桌面；尚未写入实体引闪器", "success", 9000);
       } catch (error) {
-        showActionFeedback("× 载入方案失败：" + error.message, "error", 10000);
+        showActionFeedback("× 载入预设失败：" + error.message, "error", 10000);
       }
     }
 
@@ -1137,9 +1219,9 @@
       try {
         await apiJson("/api/presets/" + encodeURIComponent(selectedPresetId) + "/default", { method: "POST" });
         await fetchStatus();
-        showActionFeedback("✓ 已将“" + (selected ? selected.name : "该方案") + "”设为默认方案", "success", 8000);
+        showActionFeedback("✓ 已将“" + (selected ? selected.name : "该预设") + "”设为默认预设", "success", 8000);
       } catch (error) {
-        showActionFeedback("× 设置默认方案失败：" + error.message, "error", 10000);
+        showActionFeedback("× 设置默认预设失败：" + error.message, "error", 10000);
       }
     }
 
@@ -1147,23 +1229,23 @@
       try {
         await apiJson("/api/presets/apply_default", { method: "POST" });
         await fetchStatus();
-        showActionFeedback("✓ 已恢复默认方案到桌面；尚未写入实体引闪器", "success", 9000);
+        showActionFeedback("✓ 已恢复默认预设到桌面；尚未写入实体引闪器", "success", 9000);
       } catch (error) {
-        showActionFeedback("× 无法恢复默认方案：" + error.message, "error", 10000);
+        showActionFeedback("× 无法恢复默认预设：" + error.message, "error", 10000);
       }
     }
 
     async function deleteSelectedPreset() {
       if (!requireSelectedPreset()) return;
       const selected = appState.presets.find(function (preset) { return preset.id === selectedPresetId; });
-      if (!confirm("确定删除方案“" + (selected ? selected.name : "") + "”吗？此操作无法恢复。")) return;
+      if (!confirm("确定删除预设“" + (selected ? selected.name : "") + "”吗？此操作无法恢复。")) return;
       try {
         await apiJson("/api/presets/" + encodeURIComponent(selectedPresetId), { method: "DELETE" });
         selectedPresetId = "";
         await fetchStatus();
-        showActionFeedback("✓ 已删除方案", "success", 6000);
+        showActionFeedback("✓ 已删除预设", "success", 6000);
       } catch (error) {
-        showActionFeedback("× 删除方案失败：" + error.message, "error", 10000);
+        showActionFeedback("× 删除预设失败：" + error.message, "error", 10000);
       }
     }
 
@@ -1358,74 +1440,146 @@
     }
 
     async function setDisplayMode(mode) {
-      appState.power_display_mode = mode;
-      await fetch('/api/set_display_mode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode })
-      });
+      const oldMode = appState.power_display_mode;
+      try {
+        const result = await apiJson('/api/set_display_mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode })
+        });
+        if (!result.success) throw new Error("显示格式未保存");
+        appState.power_display_mode = mode;
+        updateUI();
+        showActionFeedback("✓ 已切换功率显示格式", "success", 3500);
+      } catch (error) {
+        appState.power_display_mode = oldMode;
+        updateUI();
+        showActionFeedback("× 显示格式切换失败：" + error.message, "error", 8000);
+      }
+    }
+
+    function initChannelOptions() {
+      const select = document.getElementById("channelSelect");
+      if (!select || select.options.length > 1) return;
+      for (let channel = 1; channel <= 32; channel += 1) {
+        const option = document.createElement("option");
+        option.value = String(channel);
+        option.textContent = `CH ${String(channel).padStart(2, '0')}`;
+        select.appendChild(option);
+      }
+    }
+
+    async function setChannelValue(channel) {
+      if (!requireDeviceConnection("修改频道")) return false;
+      const oldChannel = appState.channel;
+      if (channel === oldChannel) {
+        updateUI();
+        return true;
+      }
+      const label = `CH ${String(channel).padStart(2, '0')}`;
+      showActionFeedback(`正在把无线频道切换到 ${label}…`, "working");
+      try {
+        const result = await apiJson('/api/set_channel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel: channel })
+        });
+        if (!result.success) throw new Error("引闪器未接受频道指令");
+        appState.channel = channel;
+        updateUI();
+        showActionFeedback(`✓ 无线频道已切换到 ${label}`, "success", 5000);
+        return true;
+      } catch (error) {
+        updateUI();
+        showActionFeedback("× 频道修改失败：" + error.message, "error", 9000);
+        return false;
+      }
+    }
+
+    function stepChannel(delta) {
+      const newChannel = Math.max(1, Math.min(32, appState.channel + delta));
+      return setChannelValue(newChannel);
+    }
+
+    function selectChannel(value) {
+      const channel = Number(value);
+      if (!Number.isInteger(channel) || channel < 1 || channel > 32) return;
+      return setChannelValue(channel);
+    }
+
+    // 频道数字和功率数字一样，点击后在原位置直接键入，不依赖系统 prompt。
+    function enableChannelInput() {
+      if (!requireDeviceConnection("修改频道")) return;
+      const display = document.getElementById("channelDisplay");
+      const input = document.getElementById("channelInput");
+      editingChannel = true;
+      input.value = String(appState.channel);
+      display.hidden = true;
+      input.hidden = false;
+      input.focus();
+      input.select();
+    }
+
+    function handleChannelInputKey(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        commitChannelInput();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        cancelChannelInput();
+      }
+    }
+
+    function cancelChannelInput() {
+      if (!editingChannel) return;
+      editingChannel = false;
+      document.getElementById("channelInput").hidden = true;
+      document.getElementById("channelDisplay").hidden = false;
       updateUI();
     }
 
-    async function stepChannel(delta) {
-      if (!requireDeviceConnection("修改频道")) return;
-      let newCh = Math.max(1, Math.min(32, appState.channel + delta));
-      appState.channel = newCh;
-      document.getElementById("channelDisplay").textContent = `CH ${String(newCh).padStart(2, '0')}`;
-      await fetch('/api/set_channel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel: newCh })
-      });
-    }
-
-    // 点击频道数字直接输入 1-32 修改；走和 +/- 完全相同的 BLE 写入链路。
-    // 后端已在 /api/set_channel 校验范围，超范围返 400。
-    async function promptChangeChannel() {
-      if (!requireDeviceConnection("修改频道")) return;
-      const current = appState.channel || 1;
-      const raw = window.prompt("输入新无线频道（1-32）", String(current));
-      if (raw === null) return; // 用户取消
-      const trimmed = raw.trim();
-      if (!trimmed) return;
-      const parsed = parseInt(trimmed, 10);
-      if (!Number.isFinite(parsed) || parsed < 1 || parsed > 32) {
-        alert("频道必须在 1 到 32 之间");
+    async function commitChannelInput() {
+      if (!editingChannel) return;
+      const input = document.getElementById("channelInput");
+      const channel = Number(input.value);
+      if (!Number.isInteger(channel) || channel < 1 || channel > 32) {
+        showActionFeedback("× 频道必须是 1 到 32 的整数", "error", 6000);
+        input.focus();
+        input.select();
         return;
       }
-      if (parsed === current) return; // 无变化
-      appState.channel = parsed;
-      document.getElementById("channelDisplay").textContent = `CH ${String(parsed).padStart(2, '0')}`;
-      const response = await fetch('/api/set_channel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel: parsed })
-      });
-      if (!response.ok) {
-        alert(`频道写入失败（HTTP ${response.status}）`);
+      editingChannel = false;
+      input.hidden = true;
+      document.getElementById("channelDisplay").hidden = false;
+      await setChannelValue(channel);
+    }
+
+    async function setGlobalToggle(stateKey, endpoint, payloadKey, actionName, successName) {
+      if (!requireDeviceConnection(actionName)) return;
+      const nextValue = !appState[stateKey];
+      showActionFeedback(`正在${actionName}…`, "working");
+      try {
+        const result = await apiJson(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [payloadKey]: nextValue })
+        });
+        if (!result.success) throw new Error("引闪器未接受指令");
+        appState[stateKey] = nextValue;
+        updateUI();
+        showActionFeedback(`✓ ${successName}已${nextValue ? '开启' : '关闭'}`, "success", 4500);
+      } catch (error) {
+        updateUI();
+        showActionFeedback(`× ${actionName}失败：${error.message}`, "error", 9000);
       }
     }
 
-    async function toggleGlobalLamp() {
-      if (!requireDeviceConnection("切换全局造型灯")) return;
-      appState.global_lamp = !appState.global_lamp;
-      updateUI();
-      await fetch('/api/set_global_lamp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lamp_on: appState.global_lamp })
-      });
+    function toggleGlobalLamp() {
+      return setGlobalToggle("global_lamp", "/api/set_global_lamp", "lamp_on", "切换全局造型灯", "全局造型灯");
     }
 
-    async function toggleGlobalSound() {
-      if (!requireDeviceConnection("切换全局蜂鸣音")) return;
-      appState.global_sound = !appState.global_sound;
-      updateUI();
-      await fetch('/api/set_global_sound', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sound_on: appState.global_sound })
-      });
+    function toggleGlobalSound() {
+      return setGlobalToggle("global_sound", "/api/set_global_sound", "sound_on", "切换全局蜂鸣音", "全局蜂鸣音");
     }
 
     async function adjustAll(delta) {
@@ -1434,12 +1588,18 @@
         showActionFeedback("× 当前没有已开启的组别可调光", "error", 6000);
         return;
       }
-      await fetch('/api/adjust_all', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ delta })
-      });
-      fetchStatus();
+      showActionFeedback("正在调整全部开启组别…", "working");
+      try {
+        const result = await apiJson('/api/adjust_all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ delta })
+        });
+        await fetchStatus();
+        showActionFeedback(result.success ? "✓ 全部开启组别已完成调光" : "× 全部调光失败：请重新连接后重试", result.success ? "success" : "error", result.success ? 5000 : 9000);
+      } catch (error) {
+        showActionFeedback("× 全部调光失败：" + error.message, "error", 9000);
+      }
     }
 
     function setGroupMode(g, mode) {
@@ -1492,7 +1652,7 @@
       const dec = customDecVal !== null ? customDecVal : grp.dec_val;
       try {
         showActionFeedback("正在写入 " + g + " 组…", "working");
-        const response = await fetch('/api/set_group', {
+        const result = await apiJson('/api/set_group', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1503,22 +1663,29 @@
             lamp: grp.lamp
           })
         });
-        const result = await response.json();
-        showActionFeedback(result.success ? "✓ " + g + " 组写入指令已送达引闪器" : "× " + g + " 组写入失败：请重新连接后重试", result.success ? "success" : "error", result.success ? 5000 : 9000);
+        if (!result.success) throw new Error("引闪器未接受指令");
+        showActionFeedback("✓ " + g + " 组写入指令已送达引闪器", "success", 5000);
       } catch (e) {
         console.error("sendGroupUpdate error", e);
+        await fetchStatus();
         showActionFeedback("× 写入失败：请重新连接后重试", "error", 9000);
       }
     }
 
     async function addGroup(g) {
-      await fetch('/api/add_group', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group: g })
-      });
-      closeAddGroupModal();
-      fetchStatus();
+      try {
+        const result = await apiJson('/api/add_group', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ group: g })
+        });
+        if (!result.success) throw new Error("组别未添加");
+        closeAddGroupModal();
+        await fetchStatus();
+        showActionFeedback(`✓ 已添加 ${g} 组`, "success", 4500);
+      } catch (error) {
+        showActionFeedback("× 添加组别失败：" + error.message, "error", 8000);
+      }
     }
 
     async function removeGroup(g) {
@@ -1526,12 +1693,18 @@
         alert("至少需要保留一个组别");
         return;
       }
-      await fetch('/api/remove_group', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ group: g })
-      });
-      fetchStatus();
+      try {
+        const result = await apiJson('/api/remove_group', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ group: g })
+        });
+        if (!result.success) throw new Error("组别未移除");
+        await fetchStatus();
+        showActionFeedback(`✓ 已从面板移除 ${g} 组`, "success", 4500);
+      } catch (error) {
+        showActionFeedback("× 移除组别失败：" + error.message, "error", 8000);
+      }
     }
 
     function openAddGroupModal() {
@@ -1556,7 +1729,7 @@
     // Device modal
     async function openDeviceModal() {
       document.getElementById("deviceModal").style.display = "flex";
-      rescanDevices();
+      await rescanDevices();
     }
 
     function closeDeviceModal() {
@@ -1565,14 +1738,24 @@
 
     async function rescanDevices() {
       const list = document.getElementById("deviceList");
+      const status = document.getElementById("deviceScanStatus");
+      const button = document.getElementById("rescanDevicesBtn");
       list.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">正在扫描附近神牛引闪器...</div>';
+      status.textContent = "正在扫描附近神牛引闪器…";
+      status.className = "scan-status";
+      const oldButtonText = button.textContent;
+      button.disabled = true;
+      button.textContent = "扫描中…";
+      showActionFeedback("正在扫描附近的神牛引闪器…", "working");
       try {
-        const res = await fetch('/api/scan_devices', { method: 'POST' });
-        const data = await res.json();
+        const data = await apiJson('/api/scan_devices', { method: 'POST' });
         const devs = data.devices || [];
         list.innerHTML = "";
         if (devs.length === 0) {
           list.innerHTML = '<div style="font-size: 13px; color: var(--text-dim); text-align: center; padding: 20px;">未扫描到设备，请确认引闪器屏幕蓝牙已开启</div>';
+          status.textContent = "扫描完成：未发现神牛引闪器";
+          status.className = "scan-status";
+          showActionFeedback("✓ 扫描完成：暂未发现神牛引闪器", "success", 5000);
           return;
         }
         devs.forEach(d => {
@@ -1592,30 +1775,55 @@
           `;
           list.appendChild(item);
         });
+        status.textContent = `扫描完成：发现 ${devs.length} 台神牛引闪器`;
+        status.className = "scan-status success";
+        showActionFeedback(`✓ 扫描完成：发现 ${devs.length} 台神牛引闪器`, "success", 5000);
       } catch (e) {
         list.innerHTML = '<div style="font-size: 13px; color: var(--accent-red); text-align: center; padding: 20px;">扫描失败</div>';
+        status.textContent = "扫描失败：" + e.message;
+        status.className = "scan-status error";
+        showActionFeedback("× 扫描失败：" + e.message, "error", 9000);
+      } finally {
+        button.disabled = false;
+        button.textContent = oldButtonText;
       }
     }
 
     async function connectSpecificDevice(addr) {
       closeDeviceModal();
-      document.getElementById("statusText").textContent = "正在连接所选引闪器...";
-      await fetch('/api/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: addr })
-      });
-      fetchStatus();
+      showActionFeedback("正在连接所选引闪器…", "working");
+      try {
+        const result = await apiJson('/api/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address: addr })
+        });
+        await fetchStatus();
+        if (!result.success) throw new Error("引闪器未连接成功");
+        showActionFeedback("✓ 已连接所选引闪器：" + (appState.device_name || "Godox Trigger"), "success", 7000);
+      } catch (error) {
+        await fetchStatus();
+        showActionFeedback("× 切换引闪器失败：" + error.message, "error", 10000);
+      }
     }
 
     async function toggleConnect() {
-      if (appState.connected) {
-        await fetch('/api/disconnect', { method: 'POST' });
-      } else {
-        document.getElementById("statusText").textContent = "正在连接...";
-        await fetch('/api/connect', { method: 'POST' });
+      const button = document.getElementById("connectBtn");
+      const connecting = !appState.connected;
+      button.disabled = true;
+      showActionFeedback(connecting ? "正在连接引闪器…" : "正在断开引闪器…", "working");
+      try {
+        const result = await apiJson(connecting ? '/api/connect' : '/api/disconnect', { method: 'POST' });
+        await fetchStatus();
+        if (!result.success) throw new Error(connecting ? "引闪器未连接成功" : "引闪器未断开");
+        showActionFeedback(connecting ? "✓ 引闪器连接成功" : "✓ 引闪器已断开", "success", 6000);
+      } catch (error) {
+        await fetchStatus();
+        showActionFeedback("× " + (connecting ? "连接" : "断开") + "失败：" + error.message, "error", 10000);
+      } finally {
+        button.disabled = false;
+        updateUI();
       }
-      fetchStatus();
     }
 
     function flashStatus(msg, ms) {
@@ -1689,6 +1897,7 @@
       fetchStatus();
     }
 
+    initChannelOptions();
     fetchStatus();
     setInterval(fetchStatus, 3000);
 
