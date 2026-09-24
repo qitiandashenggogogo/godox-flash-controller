@@ -411,10 +411,14 @@
     .test-fire-btn:hover { background: var(--test-fire-bg-hover); }
 
     .action-feedback {
-      display: block;
-      width: 100%;
-      margin: -8px 0 20px;
-      min-height: 42px;
+      position: fixed;
+      z-index: 1200;
+      top: 82px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(640px, calc(100vw - 32px));
+      min-height: 0;
+      margin: 0;
       padding: 10px 14px;
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
@@ -422,6 +426,9 @@
       color: var(--text-muted);
       font-size: 13px;
       font-weight: 600;
+      line-height: 1.45;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      pointer-events: none;
       visibility: hidden;
       opacity: 0;
       transition: opacity 0.15s ease;
@@ -580,6 +587,11 @@
     }
     .group-card.active-card {
       border-color: var(--card-active-border);
+    }
+    .group-card.focused {
+      border-color: var(--accent-godox);
+      box-shadow: 0 0 0 2px var(--accent-godox), 0 8px 20px rgba(0,0,0,0.12);
+      scroll-margin-top: 24px;
     }
     .group-card.off {
       opacity: 0.72;
@@ -761,8 +773,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-left: 8px;
-      padding-left: 12px;
+      margin-left: 14px;
+      padding-left: 16px;
       border-left: 1px solid var(--border-subtle);
     }
     .risk-label {
@@ -853,6 +865,16 @@
       text-align: center;
     }
 
+    @media (max-width: 960px) {
+      .toolbar { gap: 12px; padding: 12px 14px; }
+      .toolbar-group { flex: 1 1 calc(50% - 12px); min-width: 0; }
+      .toolbar-group:last-child { flex-basis: 100%; justify-content: flex-end; }
+      .toolbar-group .seg-control { max-width: 100%; overflow-x: auto; }
+      .preset-primary { flex: 1 1 100%; }
+      .preset-hint { flex-basis: 100%; }
+      .groups-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
     @media (max-width: 900px) {
       body { padding: 18px; }
       header { align-items: flex-start; flex-direction: column; }
@@ -861,6 +883,7 @@
     }
 
     @media (max-width: 760px) {
+      .action-feedback { top: 12px; width: calc(100vw - 24px); }
       body { padding: 12px; }
       .status-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
       .status-pill, .battery-badge { justify-content: center; }
@@ -882,6 +905,8 @@
       .device-action-risk form, .device-action-risk .btn { flex: 1; }
       .risk-label { display: none; }
       .groups-grid { grid-template-columns: 1fr; }
+      .stepper-row { gap: 5px; }
+      .stepper-btn { min-width: 0; padding-left: 4px; padding-right: 4px; }
       .all-adjust-btns { width: 100%; justify-content: stretch; }
       .all-adjust-btns .btn { flex: 1 1 30%; }
       .modal-content { max-height: calc(100vh - 24px); overflow-y: auto; padding: 18px; }
@@ -1053,10 +1078,10 @@
   <div class="modal-overlay" id="addGroupModal">
     <div class="modal-content" style="max-width: 380px;">
       <div class="modal-header">
-        <div class="modal-title">添加控制组别</div>
+        <div class="modal-title">管理控制组别</div>
         <button class="remove-group-btn" onclick="closeAddGroupModal()">✕</button>
       </div>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">选择要添加到面板的组别（英文字母 A-F 或 数字 0-9）：</p>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">隐藏只影响桌面面板，不会关闭实体组别；实际关闭请使用卡片内的 OFF。</p>
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px;" id="availableGroupsGrid">
       </div>
       <div style="display: flex; justify-content: flex-end;">
@@ -1254,7 +1279,7 @@
 
       renderTabs();
       renderPresets();
-      document.getElementById("allAdjustBar").style.display = (appState.active_group === "ALL" ? "flex" : "none");
+      document.getElementById("allAdjustBar").style.display = "flex";
 
       renderGroups();
     }
@@ -1404,7 +1429,7 @@
 
       const addBtn = document.createElement("button");
       addBtn.className = "add-group-btn";
-      addBtn.textContent = "➕ 添加组别";
+      addBtn.textContent = "⚙ 管理组别";
       addBtn.onclick = openAddGroupModal;
       tabsContainer.appendChild(addBtn);
     }
@@ -1414,7 +1439,9 @@
       const container = document.getElementById("groupsContainer");
       container.innerHTML = "";
 
-      const groupsToRender = appState.active_group === "ALL" ? appState.visible_groups : [appState.active_group];
+      // 组别 Tab 只负责定位/高亮，不再把其他灯组从视图中隐藏，便于多灯光对照。
+      const groupsToRender = appState.visible_groups;
+      const focusedGroup = appState.active_group === "ALL" ? null : appState.active_group;
 
       groupsToRender.forEach(g => {
         const grp = appState.groups[g] || { mode: "M", power: "1/64", decimal_power: "4.0", dec_val: 40, sound: false, lamp: false };
@@ -1459,15 +1486,14 @@
           stepperHtml = `
             <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', -10)" title="-1.0 档">-1.0 档</button>
             <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', -3)" title="-1/3 档">-1/3 档</button>
-            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', -1)" title="-0.1 档">-0.1 档</button>
-            <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 1)" title="+0.1 档">+0.1 档</button>
             <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 3)" title="+1/3 档">+1/3 档</button>
             <button class="stepper-btn" ${canAdjustPower ? '' : 'disabled'} onclick="stepGroupDec('${g}', 10)" title="+1.0 档">+1.0 档</button>
           `;
         }
 
         const card = document.createElement("div");
-        card.className = "group-card" + (isOff ? " off" : " active-card");
+        card.className = "group-card" + (isOff ? " off" : " active-card") + (g === focusedGroup ? " focused" : "");
+        card.id = "groupCard_" + g;
         card.innerHTML = `
           <div class="group-header">
             <div class="group-badge">
@@ -1479,7 +1505,6 @@
                 <button class="seg-btn ${grp.mode === 'TTL' ? 'active' : ''}" ${canWriteGroup ? '' : 'disabled'} onclick="setGroupMode('${g}', 'TTL')">TTL</button>
                 <button class="seg-btn ${grp.mode === 'OFF' ? 'active' : ''}" ${canWriteGroup && !isOff ? '' : 'disabled'} onclick="setGroupMode('${g}', 'OFF')">OFF</button>
               </div>
-              <button class="remove-group-btn" onclick="removeGroup('${g}')" title="从面板中隐藏 ${g} 组"><span aria-hidden="true">−</span><span class="sr-only">从面板中隐藏 ${g} 组</span></button>
             </div>
           </div>
 
@@ -1612,8 +1637,14 @@
     }
 
     function selectTab(tab) {
-      appState.active_group = tab;
+      appState.active_group = tab === "ALL" || appState.visible_groups.includes(tab) ? tab : "ALL";
       updateUI();
+      if (appState.active_group !== "ALL") {
+        setTimeout(function () {
+          const card = document.getElementById("groupCard_" + appState.active_group);
+          if (card) card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 0);
+      }
     }
 
     async function setDisplayMode(mode) {
@@ -1872,6 +1903,7 @@
         showActionFeedback("× 至少需要保留一个组别", "error", 6000);
         return;
       }
+      if (!confirm("从桌面面板隐藏 " + g + " 组吗？这不会关闭实体组别。")) return;
       try {
         const result = await apiJson('/api/remove_group', {
           method: 'POST',
@@ -1880,6 +1912,7 @@
         });
         if (!result.success) throw new Error("组别未移除");
         await fetchStatus();
+        openAddGroupModal();
         showActionFeedback(`✓ 已从面板移除 ${g} 组`, "success", 4500);
       } catch (error) {
         showActionFeedback("× 移除组别失败：" + error.message, "error", 8000);
@@ -1889,12 +1922,26 @@
     function openAddGroupModal() {
       const grid = document.getElementById("availableGroupsGrid");
       grid.innerHTML = "";
-      appState.all_available_groups.forEach(g => {
-        const isAlreadyVisible = appState.visible_groups.includes(g);
+      const visibleTitle = document.createElement("div");
+      visibleTitle.textContent = "当前显示组别";
+      visibleTitle.style.cssText = "grid-column: 1 / -1; color: var(--text-muted); font-size: 12px; font-weight: 600;";
+      grid.appendChild(visibleTitle);
+      appState.visible_groups.forEach(g => {
         const btn = document.createElement("button");
-        btn.className = "btn " + (isAlreadyVisible ? "btn-active" : "btn-primary");
-        btn.textContent = `${g} 组`;
-        btn.disabled = isAlreadyVisible;
+        btn.className = "btn btn-danger";
+        btn.textContent = `隐藏 ${g} 组`;
+        btn.disabled = appState.visible_groups.length <= 1;
+        btn.onclick = () => removeGroup(g);
+        grid.appendChild(btn);
+      });
+      const availableTitle = document.createElement("div");
+      availableTitle.textContent = "可添加组别";
+      availableTitle.style.cssText = "grid-column: 1 / -1; margin-top: 6px; color: var(--text-muted); font-size: 12px; font-weight: 600;";
+      grid.appendChild(availableTitle);
+      appState.all_available_groups.filter(g => !appState.visible_groups.includes(g)).forEach(g => {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-primary";
+        btn.textContent = `添加 ${g} 组`;
         btn.onclick = () => addGroup(g);
         grid.appendChild(btn);
       });
@@ -2008,15 +2055,8 @@
     }
 
     function flashStatus(msg, ms) {
-      if (!ms) ms = 3000;
-      var el = document.getElementById("statusText");
-      var old = el.innerText;
-      el.innerText = msg;
-      clearTimeout(window.__flashT);
-      window.__flashT = setTimeout(function () {
-        el.innerText = old;
-        fetchStatus();
-      }, ms);
+      var tone = msg.indexOf("✓") === 0 ? "success" : (msg.indexOf("正在") === 0 ? "working" : "error");
+      showActionFeedback(msg, tone, ms || 3000);
     }
 
     function showActionFeedback(msg, tone, ms) {
@@ -2110,6 +2150,7 @@
       var btn = document.getElementById('btnAllOff');
       var oldText = btn.innerText;
       var restoring = appState.can_restore_all_off;
+      if (!restoring && !confirm('确定关闭所有组别的闪光输出吗？再次点击可恢复关闭前状态。')) return false;
       btn.innerText = restoring ? '⏳ 恢复中...' : '⏳ 关闭中...';
       btn.disabled = true;
       showActionFeedback(restoring ? '正在恢复全局 OFF 前保存的状态…' : '正在关闭所有组别的闪光输出，并保存恢复点…', 'working');
