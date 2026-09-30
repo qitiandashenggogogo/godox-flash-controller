@@ -179,20 +179,6 @@
       border: 1px solid var(--border-subtle);
       font-size: 13px;
     }
-    .battery-badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 30px;
-      padding: 5px 10px;
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      background: var(--bg-surface);
-      color: var(--text-muted);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .battery-badge.available { color: var(--accent-green); border-color: var(--accent-green); }
-    .battery-badge.unavailable { color: var(--text-dim); }
     .status-dot {
       width: 8px;
       height: 8px;
@@ -412,14 +398,11 @@
 
     .action-feedback {
       position: fixed;
-      z-index: 1200;
-      top: 82px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(640px, calc(100vw - 32px));
-      min-height: 0;
-      margin: 0;
-      padding: 10px 14px;
+      z-index: 9999;
+      right: 20px;
+      bottom: 20px;
+      max-width: min(360px, calc(100vw - 24px));
+      padding: 10px 16px;
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
       background: var(--bg-surface);
@@ -427,16 +410,17 @@
       font-size: 13px;
       font-weight: 600;
       line-height: 1.45;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.35);
       pointer-events: none;
       visibility: hidden;
       opacity: 0;
-      transition: opacity 0.15s ease;
+      transform: translateY(8px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
     }
-    .action-feedback.show { visibility: visible; opacity: 1; }
+    .action-feedback.show { visibility: visible; opacity: 1; transform: translateY(0); }
     .action-feedback.working { border-color: var(--accent-godox); color: var(--accent-godox); }
     .action-feedback.success { border-color: var(--accent-green); color: var(--accent-green); }
-    .action-feedback.error { border-color: var(--accent-red); color: var(--error-text); }
+    .action-feedback.error { border-color: var(--accent-red); color: var(--error-text); background: var(--bg-surface); }
 
     .preset-bar {
       display: flex;
@@ -598,6 +582,16 @@
       border-color: var(--card-off-border);
       background: var(--card-off-bg);
     }
+    .group-card.flash-ok { animation: cardFlashOk 0.6s ease-out; }
+    .group-card.flash-fail { animation: cardFlashFail 0.6s ease-out; }
+    @keyframes cardFlashOk {
+      0% { border-color: var(--accent-green); box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.45); }
+      100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+    }
+    @keyframes cardFlashFail {
+      0% { border-color: var(--accent-red); box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.5); }
+      100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    }
     .group-header {
       display: flex;
       justify-content: space-between;
@@ -667,6 +661,15 @@
       color: var(--text-bright);
       letter-spacing: -1px;
       line-height: 1;
+    }
+    .power-val-main.pulse { animation: powerPulse 0.18s ease-out; }
+    @keyframes powerPulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .action-feedback, .group-card, .power-val-main { transition: none; animation: none !important; }
     }
     .power-val-sub {
       font-size: 13px;
@@ -883,10 +886,10 @@
     }
 
     @media (max-width: 760px) {
-      .action-feedback { top: 12px; width: calc(100vw - 24px); }
+      .action-feedback { right: 12px; bottom: 12px; }
       body { padding: 12px; }
       .status-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
-      .status-pill, .battery-badge { justify-content: center; }
+      .status-pill { justify-content: center; }
       .status-bar .theme-switch { grid-column: 1 / -1; justify-content: center; }
       .status-bar > .btn { justify-content: center; }
       .toolbar { padding: 12px; }
@@ -938,7 +941,6 @@
           <div class="status-dot" id="statusDot"></div>
           <span id="statusText">正在初始化...</span>
         </div>
-        <div class="battery-badge unavailable" id="batteryStatus" role="status" aria-live="polite">电量：未连接</div>
         <div class="seg-control theme-switch">
           <button class="seg-btn" data-theme-choice="system" onclick="setThemeChoice('system')">跟随系统</button>
           <button class="seg-btn" data-theme-choice="dark" onclick="setThemeChoice('dark')">深色</button>
@@ -992,7 +994,7 @@
         <button class="btn btn-primary" onclick="openPresetModal()">＋ 保存当前为预设</button>
         <button class="btn" onclick="applySelectedPreset()">载入预设</button>
       </div>
-      <details class="preset-more">
+      <details class="preset-more" id="presetMoreActions">
         <summary>更多预设操作</summary>
         <div class="preset-more-actions">
           <button class="btn" onclick="setSelectedPresetDefault()">设为开机默认预设</button>
@@ -1045,7 +1047,7 @@
     </div>
 
     <div class="notice-bar">
-      <strong>同步模型说明（实测结论）</strong>：X3 Pro 蓝牙主要是<strong>单向命令通道</strong>（与官方 App 同机制），实体端不会完整回传频道、功率等状态——桌面上显示的数值以「本机记忆」为准，连接后不会覆盖你的实体设置；你在桌面做的任何调整会立即写入实体。如需以桌面配置整体接管实体，点「⇓ 同步到引闪器」。实体引闪器本身可以在 LCD 显示电量；当前 BLE 会话尚未拿到可解析的电量回传，桌面不猜测数值，并会明确显示“未回传”。
+      <strong>同步模型说明（实测结论）</strong>：X3 Pro 蓝牙主要是<strong>单向命令通道</strong>（与官方 App 同机制），实体端不会完整回传频道、功率等状态——桌面上显示的数值以「本机记忆」为准，连接后不会覆盖你的实体设置；你在桌面做的任何调整会立即写入实体。如需以桌面配置整体接管实体，点「⇓ 同步到引闪器」。
     </div>
 
     <footer>
@@ -1054,10 +1056,10 @@
   </div>
 
   <!-- Device Modal -->
-  <div class="modal-overlay" id="deviceModal">
-    <div class="modal-content">
+  <div class="modal-overlay" id="deviceModal" data-backdrop-close="true" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="deviceModalTitle">
       <div class="modal-header">
-        <div class="modal-title">发现附近的神牛引闪器</div>
+        <div class="modal-title" id="deviceModalTitle">发现附近的神牛引闪器</div>
         <button class="remove-group-btn" onclick="closeDeviceModal()">✕</button>
       </div>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
@@ -1075,10 +1077,10 @@
   </div>
 
   <!-- Add Group Modal -->
-  <div class="modal-overlay" id="addGroupModal">
-    <div class="modal-content" style="max-width: 380px;">
+  <div class="modal-overlay" id="addGroupModal" data-backdrop-close="true" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addGroupModalTitle" style="max-width: 380px;">
       <div class="modal-header">
-        <div class="modal-title">管理控制组别</div>
+        <div class="modal-title" id="addGroupModalTitle">管理控制组别</div>
         <button class="remove-group-btn" onclick="closeAddGroupModal()">✕</button>
       </div>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">隐藏只影响桌面面板，不会关闭实体组别；实际关闭请使用卡片内的 OFF。</p>
@@ -1091,10 +1093,10 @@
   </div>
 
   <!-- Preset Modal -->
-  <div class="modal-overlay" id="presetModal">
-    <div class="modal-content" style="max-width: 420px;">
+  <div class="modal-overlay" id="presetModal" data-backdrop-close="false" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="presetModalTitle" style="max-width: 420px;">
       <div class="modal-header">
-        <div class="modal-title">保存当前布光预设</div>
+        <div class="modal-title" id="presetModalTitle">保存当前布光预设</div>
         <button class="remove-group-btn" onclick="closePresetModal()">✕</button>
       </div>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">会保存频道、全局开关、显示格式和每个组别的当前设置；不会立即写入实体引闪器。</p>
@@ -1147,16 +1149,83 @@
       discovered_devices: [],
       presets: [],
       default_preset_id: null,
-      can_restore_all_off: false,
-      battery_level: null,
-      battery_supported: null,
-      battery_state: "unknown"
+      can_restore_all_off: false
     };
 
     let debounceTimers = {};
     let editingGroup = null;
     let editingChannel = false;
     let selectedPresetId = "";
+    let activeModalId = null;
+    const modalIds = ["deviceModal", "addGroupModal", "presetModal"];
+
+    function setModalOpen(id, open) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.style.display = open ? "flex" : "none";
+      modal.setAttribute("aria-hidden", String(!open));
+      if (open) {
+        activeModalId = id;
+      } else if (activeModalId === id) {
+        activeModalId = null;
+      }
+    }
+
+    function openModal(id) {
+      closePresetMoreActions();
+      modalIds.forEach(function (modalId) {
+        if (modalId !== id) setModalOpen(modalId, false);
+      });
+      setModalOpen(id, true);
+    }
+
+    function closeModal(id) {
+      setModalOpen(id, false);
+    }
+
+    function getOpenModalId() {
+      if (activeModalId && document.getElementById(activeModalId)?.style.display === "flex") {
+        return activeModalId;
+      }
+      return modalIds.find(function (modalId) {
+        return document.getElementById(modalId)?.style.display === "flex";
+      }) || null;
+    }
+
+    function closePresetMoreActions() {
+      const details = document.getElementById("presetMoreActions");
+      if (details) details.open = false;
+    }
+
+    function handleTransientDocumentClick(event) {
+      const target = event.target;
+      const presetMore = document.getElementById("presetMoreActions");
+      if (presetMore?.open && !presetMore.contains(target)) {
+        closePresetMoreActions();
+      }
+
+      if (target instanceof Element && target.classList.contains("modal-overlay")) {
+        if (target.dataset.backdropClose === "true") closeModal(target.id);
+      }
+    }
+
+    function handleTransientDocumentKeydown(event) {
+      if (event.key !== "Escape") return;
+      const openModalId = getOpenModalId();
+      if (openModalId) {
+        event.preventDefault();
+        closeModal(openModalId);
+        return;
+      }
+      const presetMore = document.getElementById("presetMoreActions");
+      if (presetMore?.open) {
+        event.preventDefault();
+        closePresetMoreActions();
+      }
+    }
+
+    document.addEventListener("click", handleTransientDocumentClick);
+    document.addEventListener("keydown", handleTransientDocumentKeydown);
 
     async function fetchStatus() {
       try {
@@ -1166,9 +1235,6 @@
         appState.device_name = data.device_name;
         appState.device_address = data.device_address;
         appState.channel = data.channel || 6;
-        appState.battery_level = Number.isFinite(data.battery_level) ? data.battery_level : null;
-        appState.battery_supported = typeof data.battery_supported === "boolean" ? data.battery_supported : null;
-        appState.battery_state = data.battery_state || "unknown";
         appState.global_lamp = data.global_lamp || false;
         appState.global_sound = data.global_sound || false;
         if (data.power_display_mode) appState.power_display_mode = data.power_display_mode;
@@ -1199,29 +1265,6 @@
         txt.textContent = appState.device_name ? `离线 (${appState.device_name})` : "未连接";
         btn.textContent = "连接引闪器";
         btn.className = "btn btn-primary";
-      }
-
-      const battery = document.getElementById("batteryStatus");
-      if (appState.connected && Number.isFinite(appState.battery_level)) {
-        battery.textContent = `实体电量：${appState.battery_level}%`;
-        battery.className = "battery-badge available";
-        battery.title = "已从实体引闪器的 BLE 电量特征读取";
-      } else if (appState.connected && appState.battery_state === "not_exposed") {
-        battery.textContent = "实体电量：未回传";
-        battery.className = "battery-badge unavailable";
-        battery.title = "实体引闪器 LCD 可以显示电量，但当前 BLE 会话没有返回可解析的电量字段";
-      } else if (appState.connected && appState.battery_state === "unreadable") {
-        battery.textContent = "实体电量：读取失败";
-        battery.className = "battery-badge unavailable";
-        battery.title = "已连接，但这次没有读到电量；不会用猜测值替代";
-      } else if (appState.connected) {
-        battery.textContent = "实体电量：读取中…";
-        battery.className = "battery-badge";
-        battery.title = "正在读取实体引闪器电量";
-      } else {
-        battery.textContent = "实体电量：未连接";
-        battery.className = "battery-badge unavailable";
-        battery.title = "连接引闪器后读取电量";
       }
 
       const deviceBanner = document.getElementById("deviceStateBanner");
@@ -1315,12 +1358,12 @@
 
     function openPresetModal() {
       document.getElementById("presetNameInput").value = "";
-      document.getElementById("presetModal").style.display = "flex";
+      openModal("presetModal");
       setTimeout(function () { document.getElementById("presetNameInput").focus(); }, 0);
     }
 
     function closePresetModal() {
-      document.getElementById("presetModal").style.display = "none";
+      closeModal("presetModal");
     }
 
     async function apiJson(url, options) {
@@ -1875,10 +1918,12 @@
         });
         if (!result.success) throw new Error("引闪器未接受指令");
         showActionFeedback("✓ " + g + " 组写入指令已送达引闪器", "success", 5000);
+        flashCard(g, true);
       } catch (e) {
         console.error("sendGroupUpdate error", e);
         await fetchStatus();
         showActionFeedback("× 写入失败：请重新连接后重试", "error", 9000);
+        flashCard(g, false);
       }
     }
 
@@ -1945,21 +1990,21 @@
         btn.onclick = () => addGroup(g);
         grid.appendChild(btn);
       });
-      document.getElementById("addGroupModal").style.display = "flex";
+      openModal("addGroupModal");
     }
 
     function closeAddGroupModal() {
-      document.getElementById("addGroupModal").style.display = "none";
+      closeModal("addGroupModal");
     }
 
     // Device modal
     async function openDeviceModal() {
-      document.getElementById("deviceModal").style.display = "flex";
+      openModal("deviceModal");
       await rescanDevices();
     }
 
     function closeDeviceModal() {
-      document.getElementById("deviceModal").style.display = "none";
+      closeModal("deviceModal");
     }
 
     async function rescanDevices() {
@@ -2069,6 +2114,24 @@
           el.className = "action-feedback";
           el.textContent = "";
         }, ms);
+      }
+    }
+
+    function flashCard(g, ok) {
+      const card = document.getElementById("groupCard_" + g);
+      if (!card) return;
+      card.classList.remove("flash-ok", "flash-fail");
+      void card.offsetWidth;
+      card.classList.add(ok ? "flash-ok" : "flash-fail");
+      setTimeout(() => card.classList.remove("flash-ok", "flash-fail"), 700);
+      if (ok) {
+        const value = document.getElementById("powerValMain_" + g);
+        if (value) {
+          value.classList.remove("pulse");
+          void value.offsetWidth;
+          value.classList.add("pulse");
+          setTimeout(() => value.classList.remove("pulse"), 250);
+        }
       }
     }
 

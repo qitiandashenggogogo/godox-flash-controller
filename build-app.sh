@@ -7,14 +7,17 @@ if [ "${1:-}" = "--bundle-backend" ]; then
     bundle_backend=true
 fi
 
+SPARKLE_ROOT="$(bash scripts/ensure-sparkle.sh)"
 echo "编译 macOS 原生应用（arm64 + x86_64 双架构，最低 macOS 11）..."
-swiftc -O -swift-version 5 -target arm64-apple-macos11.0 -o GodoxController-arm64 GodoxController.swift -framework WebKit -framework AppKit
-swiftc -O -swift-version 5 -target x86_64-apple-macos11.0 -o GodoxController-x86_64 GodoxController.swift -framework WebKit -framework AppKit
+swiftc -O -swift-version 5 -target arm64-apple-macos11.0 -o GodoxController-arm64 GodoxController.swift -framework WebKit -framework AppKit -F "$SPARKLE_ROOT" -framework Sparkle -Xlinker -rpath -Xlinker '@executable_path/../Frameworks'
+swiftc -O -swift-version 5 -target x86_64-apple-macos11.0 -o GodoxController-x86_64 GodoxController.swift -framework WebKit -framework AppKit -F "$SPARKLE_ROOT" -framework Sparkle -Xlinker -rpath -Xlinker '@executable_path/../Frameworks'
 lipo -create GodoxController-arm64 GodoxController-x86_64 -output GodoxController
 rm GodoxController-arm64 GodoxController-x86_64
-mkdir -p "Godox Controller.app/Contents/MacOS" "Godox Controller.app/Contents/Resources"
+mkdir -p "Godox Controller.app/Contents/MacOS" "Godox Controller.app/Contents/Resources" "Godox Controller.app/Contents/Frameworks"
 cp Info.plist "Godox Controller.app/Contents/"
 cp GodoxController "Godox Controller.app/Contents/MacOS/GodoxController"
+ditto "$SPARKLE_ROOT/Sparkle.framework" "Godox Controller.app/Contents/Frameworks/Sparkle.framework"
+cp "$SPARKLE_ROOT/LICENSE" "Godox Controller.app/Contents/Resources/Sparkle-LICENSE.txt"
 if [ -f assets/icon/GodoxController.icns ]; then
     cp assets/icon/GodoxController.icns "Godox Controller.app/Contents/Resources/GodoxController.icns"
 fi
@@ -68,6 +71,12 @@ if security find-identity -p codesigning 2>/dev/null | grep -q "$SIGN_IDENTITY";
             -exec codesign --force --sign "$SIGN_IDENTITY" {} +
         codesign --force --sign "$SIGN_IDENTITY" "$STAGED_APP/Contents/Resources/backend/GodoxControllerBackend"
     fi
+    SPARKLE_STAGE="$STAGED_APP/Contents/Frameworks/Sparkle.framework/Versions/B"
+    codesign --force --sign "$SIGN_IDENTITY" --options runtime "$SPARKLE_STAGE/XPCServices/Installer.xpc"
+    codesign --force --sign "$SIGN_IDENTITY" --options runtime --preserve-metadata=entitlements "$SPARKLE_STAGE/XPCServices/Downloader.xpc"
+    codesign --force --sign "$SIGN_IDENTITY" --options runtime "$SPARKLE_STAGE/Autoupdate"
+    codesign --force --sign "$SIGN_IDENTITY" --options runtime "$SPARKLE_STAGE/Updater.app"
+    codesign --force --sign "$SIGN_IDENTITY" --options runtime "$STAGED_APP/Contents/Frameworks/Sparkle.framework"
     codesign --force --sign "$SIGN_IDENTITY" "$STAGED_APP/Contents/MacOS/GodoxController"
     codesign --force --sign "$SIGN_IDENTITY" "$STAGED_APP"
     # 签名后立即验证，不合格直接中止（set -e），绝不让坏包流出去

@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import WebKit
 import CoreBluetooth
+import Sparkle
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var statusItem: NSStatusItem!
@@ -11,6 +12,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     // 用于在 Swift 进程内预热 CoreBluetooth，让 macOS 把 BLE 权限归属到 .app Bundle，
     // 而不是落到后端 Python 进程上；后端 bleak 调用才能拿到「点了允许」之后真正可用的状态。
     private var bluetoothWarmer: CBCentralManager?
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     static let port = 8765
     static let localUrl = "http://127.0.0.1:8765/"
@@ -234,6 +240,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let reloadItem = NSMenuItem(title: "刷新控制面板", action: #selector(reloadAction), keyEquivalent: "r")
         reloadItem.target = self
         menu.addItem(reloadItem)
+
+        let updateItem = NSMenuItem(
+            title: "检查更新…",
+            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
+            keyEquivalent: "u"
+        )
+        updateItem.target = updaterController
+        menu.addItem(updateItem)
 
         menu.addItem(NSMenuItem.separator())
 

@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-VERSION="${VERSION:-1.5}"
+VERSION="${VERSION:-1.6}"
 APP_NAME="Godox Controller.app"
 DMG_NAME="GodoxController-v${VERSION}.dmg"
 STAGING="$(mktemp -d -t godox-dmg)"

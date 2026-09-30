@@ -9,7 +9,7 @@ app = FastAPI(title="Godox 引闪器桌面控制台")
 
 @app.get("/api/health")
 async def health():
-    return {"app": "godox-controller", "version": "1.5"}
+    return {"app": "godox-controller", "version": "1.6"}
 
 class SetGroupRequest(BaseModel):
     group: str
