@@ -33,11 +33,14 @@ if [ "$bundle_backend" = true ]; then
     fi
     echo "封装内置后端（同事无需 Python 或 AI）..."
     rm -rf build dist/GodoxControllerBackend "Godox Controller.app/Contents/Resources/backend"
+    # Info.plist 打进 onedir 根部：没有 Swift 壳、直接跑打包后端时也能读到真实版本。
+    # 仍是同一份 Info.plist，构建期拷贝，不是第二个版本来源。
     .venv/bin/python -m PyInstaller --noconfirm --clean --onedir \
         --name GodoxControllerBackend \
         --target-architecture universal2 \
         --paths "$PWD" \
         --add-data "$PWD/app/static:app/static" \
+        --add-data "$PWD/Info.plist:." \
         --collect-all bleak \
         app_backend.py
     cp -R dist/GodoxControllerBackend "Godox Controller.app/Contents/Resources/backend"

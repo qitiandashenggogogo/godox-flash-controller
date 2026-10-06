@@ -1,11 +1,13 @@
 import os
 import asyncio
+import html
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from app.runtime import acquire_backend_lock, INSTANCE_ID, PROTOCOL_VERSION, read_theme, save_theme
+from app.version import read_app_version
 
 # Direct uvicorn imports must also acquire ownership before touching state.
 acquire_backend_lock()
@@ -69,7 +71,8 @@ async def set_theme(req: ThemeRequest):
 
 @app.get("/api/health")
 async def health():
-    return {"app": "godox-controller", "version": "1.6", "instance_id": INSTANCE_ID, "protocol_version": PROTOCOL_VERSION}
+    # Info.plist is the only version source; the UI renders exactly this value.
+    return {"app": "godox-controller", "version": read_app_version(), "instance_id": INSTANCE_ID, "protocol_version": PROTOCOL_VERSION}
 
 
 class SetGroupRequest(BaseModel):
@@ -323,6 +326,10 @@ async def serve_index():
     index_file = os.path.join(static_dir, "index.html")
     if os.path.exists(index_file):
         with open(index_file, encoding="utf-8") as handle:
-            html = handle.read().replace("__GODOX_INSTANCE_ID__", INSTANCE_ID).replace("__GODOX_THEME__", read_theme())
-        return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"})
+            page = handle.read()
+        # Version comes from Info.plist, escaped because it is interpolated into markup.
+        page = (page.replace("__GODOX_INSTANCE_ID__", INSTANCE_ID)
+                    .replace("__GODOX_THEME__", read_theme())
+                    .replace("__GODOX_APP_VERSION__", html.escape(read_app_version())))
+        return HTMLResponse(page, headers={"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"})
     return HTMLResponse("<h1>Godox 引闪器桌面控制台</h1><p>请配置 static/index.html</p>")

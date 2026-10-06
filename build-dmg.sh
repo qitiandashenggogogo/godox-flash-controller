@@ -4,8 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-VERSION="${VERSION:-1.6}"
 APP_NAME="Godox Controller.app"
+VERSION="${VERSION:-$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_NAME/Contents/Info.plist")}"
 DMG_NAME="GodoxController-v${VERSION}.dmg"
 STAGING="$(mktemp -d -t godox-dmg)"
 LAYOUT_DIR="${STAGING}/layout"

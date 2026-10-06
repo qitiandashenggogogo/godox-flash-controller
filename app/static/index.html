@@ -156,6 +156,19 @@
       border-radius: 4px;
       letter-spacing: 0.5px;
     }
+    /* Passive read-only build label. Never a control, so it inherits theme colors only. */
+    .version-tag {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
     .subtitle {
       font-size: 13px;
       color: var(--text-muted);
@@ -937,6 +950,7 @@
         <h1>
           <span class="brand-tag">GODOX</span>
           引闪器桌面控制台
+          <span class="version-tag">v__GODOX_APP_VERSION__</span>
         </h1>
       </div>
       <div class="status-bar">
