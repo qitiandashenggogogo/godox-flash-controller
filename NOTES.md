@@ -2,11 +2,17 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-10-06 退出清理传入空任务导致蓝牙断开被跳过
+
+- **问题与原因**：电量刷新或重连任务尚未建立时，`asyncio.gather(None, ...)` 抛出 TypeError，后续 `manager.disconnect()` 不会执行；上下文异常时，放在 `yield` 后的清理也会被跳过。
+- **修复**：退出逻辑置于 `finally`，仅取消并等待实际存在的任务，再执行有超时限制的断开。
+- **验证**：隔离子进程以假客户端复现并覆盖无任务、一个任务及上下文异常三种路径，确认清理和断开确实执行；连同既有回归共 21 项通过，无真实灯具操作。
+
 ## 2026-10-06 蓝牙诊断不能把 NSBundle 关联对象当作授权修复
 
 - **问题描述**：待合并补丁把 `.app` 路径再删掉一层，并用 `objc.setAssociatedObject(NSBundle, "mainBundle", ...)` 宣称重绑 Python 的主 Bundle。
 - **原因与证据**：Swift 的 `Bundle.main.bundleURL` 已是 `.app` 本身；隔离 Python 实测设置关联对象前后，`NSBundle.mainBundle()` 路径与 ID 均未改变。本机 macOS 26.6.2 上，Bleak 读取该 ID 的分支仅用于 macOS 12.0–12.2 的日志。同期 TCC 日志实际以外壳 `com.godoxcontroller.desktop` 为主体，并匹配现有证书要求，不能据 Python 的 Bundle ID 推断授权主体错误。
-- **处理与验证**：BackendSupervisor 传入真实 `.app` 路径；导入 BLE 前将身份诊断写到 stderr，不重绑 Foundation，不污染 READY。源码 18 项回归全部通过，覆盖外壳路径、ID 校验、诊断输出和既有启动行为；此结果不证明新打包应用的真实蓝牙连接已通过。
+- **处理与验证**：BackendSupervisor 传入真实 `.app` 路径；导入 BLE 前将身份诊断写到 stderr，不重绑 Foundation，不污染 READY。源码 21 项回归全部通过，覆盖外壳路径、ID 校验、诊断输出、退出清理和既有启动行为；此结果不证明新打包应用的真实蓝牙连接已通过。
 
 ## 2026-10-06 控制台固定 8765 被占用后无法启动，动态端口 + 实例身份方案落地
 

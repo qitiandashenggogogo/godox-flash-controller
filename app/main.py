@@ -17,15 +17,19 @@ from app.ble_manager import manager
 
 @asynccontextmanager
 async def lifespan(application):
-    yield
-    manager.auto_reconnect = False
-    if manager.battery_refresh_task and not manager.battery_refresh_task.done():
-        manager.battery_refresh_task.cancel()
-    if manager.reconnect_task and not manager.reconnect_task.done():
-        manager.reconnect_task.cancel()
-    await asyncio.gather(manager.battery_refresh_task, manager.reconnect_task, return_exceptions=True)
-    if manager.client and manager.client.is_connected:
-        await asyncio.wait_for(manager.disconnect(), timeout=2)
+    try:
+        yield
+    finally:
+        manager.auto_reconnect = False
+        tasks = [task for task in (manager.battery_refresh_task, manager.reconnect_task)
+                 if task is not None]
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        if manager.client and manager.client.is_connected:
+            await asyncio.wait_for(manager.disconnect(), timeout=2)
 
 
 app = FastAPI(title="Godox 引闪器桌面控制台", lifespan=lifespan)
