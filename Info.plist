@@ -28,8 +28,10 @@
     <string>CHSaNfgtDzkmN+iaIPuLoY0LioLlcisyklQs+f1UFcE=</string>
     <key>SUEnableAutomaticChecks</key>
     <true/>
+    <!-- 默认只后台检查，不自动下载、不自动安装：装不装由用户点「更新到 vX…」时决定。
+         这只是打包时的默认值，已有用户设置优先，外壳不会强制改动用户偏好。 -->
     <key>SUAutomaticallyUpdate</key>
-    <true/>
+    <false/>
     <key>SUVerifyUpdateBeforeExtraction</key>
     <true/>
     <key>SURequireSignedFeed</key>

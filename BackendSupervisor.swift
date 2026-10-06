@@ -253,18 +253,66 @@ final class BackendSupervisor {
         }
     }
 
+    /// Posts a command that reports its own outcome in `{"success": ...}`, which is the shape
+    /// every action endpoint in the console uses. Kept byte-for-byte in meaning: HTTP 200
+    /// alone is not success here.
     func post(_ path: String, completion: @escaping (Bool) -> Void) {
-        guard state == .ready, let url = baseURL, let identity = instanceID else { completion(false); return }
+        request("POST", path: path, body: nil) { json, ok in
+            completion(Self.reportsSuccess(json, transportOK: ok))
+        }
+    }
+
+    /// The single rule every command endpoint is judged by.
+    ///
+    /// The backend answers 200 even when the hardware refused: `api/connect` returns
+    /// `{"success": false}` to say the light did not come back. So transport success and the
+    /// body's own verdict are two separate facts and both are required, and a body that cannot
+    /// be read at all is a failure rather than a silent yes.
+    static func reportsSuccess(_ json: [String: Any]?, transportOK: Bool) -> Bool {
+        guard transportOK else { return false }
+        return json?["success"] as? Bool == true
+    }
+
+    /// Reads a JSON object from the current backend. Used where the shell needs to know what
+    /// the hardware side is actually doing — notably to note the connected device before an
+    /// update restarts the app.
+    func get(_ path: String, completion: @escaping ([String: Any]?) -> Void) {
+        request("GET", path: path, body: nil) { json, _ in completion(json) }
+    }
+
+    /// Connects to one exact address. Never scans and never substitutes another device.
+    ///
+    /// `api/connect` answers `{"success": ..., "status": {...}}`, so HTTP 200 on its own means
+    /// only that the request arrived: the backend reports a refused connection in a 200 body.
+    /// Treating that as success would claim the user's light came back when it did not, which
+    /// is the one thing the post-update restore must never do.
+    func connect(address: String, completion: @escaping (Bool) -> Void) {
+        guard let data = try? JSONSerialization.data(withJSONObject: ["address": address]) else {
+            return completion(false)
+        }
+        request("POST", path: "api/connect", body: data) { json, ok in
+            completion(Self.reportsSuccess(json, transportOK: ok))
+        }
+    }
+
+    private func request(_ method: String, path: String, body: Data?, completion: @escaping ([String: Any]?, Bool) -> Void) {
+        guard state == .ready, let url = baseURL, let identity = instanceID else { completion(nil, false); return }
         let current = generation
         var request = URLRequest(url: url.appendingPathComponent(path))
-        request.httpMethod = "POST"
-        request.setValue(identity, forHTTPHeaderField: "X-Godox-Instance")
+        request.httpMethod = method
+        if let body = body {
+            request.httpBody = body
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        if method != "GET" {
+            request.setValue(identity, forHTTPHeaderField: "X-Godox-Instance")
+        }
         session.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 guard let self = self, current == self.generation, self.state == .ready,
-                      self.instanceID == identity else { return }
+                      self.instanceID == identity else { return completion(nil, false) }
                 let json = data.flatMap { try? JSONSerialization.jsonObject(with: $0) } as? [String: Any]
-                completion(error == nil && (response as? HTTPURLResponse)?.statusCode == 200 && json?["success"] as? Bool == true)
+                completion(json, error == nil && (response as? HTTPURLResponse)?.statusCode == 200)
             }
         }.resume()
     }

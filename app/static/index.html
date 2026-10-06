@@ -169,6 +169,26 @@
       letter-spacing: 0.2px;
       white-space: nowrap;
     }
+    /* 更新入口：只有桌面应用会把它显示出来。普通浏览器里它始终是隐藏的，
+       所以不会出现点不动的假按钮。样式刻意贴近版本号，不抢控制台的注意力。 */
+    .update-entry {
+      flex-shrink: 0;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--accent-godox);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 2px 7px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .update-entry[hidden] { display: none; }
+    .update-entry:hover { background: var(--bg-surface); border-color: var(--border-subtle); }
+    .update-entry:focus-visible { outline: 2px solid var(--accent-godox); outline-offset: 1px; }
     .subtitle {
       font-size: 13px;
       color: var(--text-muted);
@@ -951,6 +971,7 @@
           <span class="brand-tag">GODOX</span>
           引闪器桌面控制台
           <span class="version-tag">v__GODOX_APP_VERSION__</span>
+          <button type="button" class="update-entry" id="godoxUpdateEntry" hidden>更新</button>
         </h1>
       </div>
       <div class="status-bar">
@@ -1149,6 +1170,35 @@
       }
       return response;
     };
+    // ===== 桌面应用的更新入口 =====
+    // 页面本身不带任何更新知识：只有原生外壳会把当前状态推进来。没有推进（普通浏览器）
+    // 就没有按钮，也就没有一个点了没反应的假控件。原生侧还会校验消息来源，见
+    // UpdateBridgePolicy.swift。请求状态和发起更新是两个独立通道，绝不混用。
+    function godoxNativeHandler(name) {
+      const handlers = window.webkit && window.webkit.messageHandlers;
+      return handlers && handlers[name] ? handlers[name] : null;
+    }
+    window.__godoxApplyUpdateState = function (state) {
+      const entry = document.getElementById('godoxUpdateEntry');
+      if (!entry || !state) return;
+      if (!state.actionable || !state.title || !godoxNativeHandler('godoxUpdateAction')) {
+        entry.hidden = true;
+        return;
+      }
+      entry.textContent = state.title;
+      if (state.accessibleLabel) entry.setAttribute('aria-label', state.accessibleLabel);
+      entry.title = '点击后下载并安装新版本';
+      entry.hidden = false;
+    };
+    const godoxUpdateAction = godoxNativeHandler('godoxUpdateAction');
+    if (godoxUpdateAction) {
+      document.getElementById('godoxUpdateEntry').addEventListener('click', function () {
+        godoxUpdateAction.postMessage('update');
+      });
+      // 页面重新加载后主动问一次，避免入口要等下一次状态变化才出现。
+      const godoxStateRequest = godoxNativeHandler('godoxUpdateStateRequest');
+      if (godoxStateRequest) godoxStateRequest.postMessage('state');
+    }
     // ===== 主题管理：跟随系统 / 深色 / 浅色 =====
     const THEME_KEY = 'godox-theme';
     const themeMedia = window.matchMedia('(prefers-color-scheme: dark)');

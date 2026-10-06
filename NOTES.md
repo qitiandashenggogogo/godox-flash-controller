@@ -2,6 +2,12 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-10-06 Sparkle 可选回调编译通过却未导出 Objective-C selector
+
+- **原因与证据**：把 gentle reminder 的只读属性写成 Swift 方法，或遗漏 `didAbortWithError` 的 updater 参数，编译不会证明这些可选回调已接入。实际 `responds(to:)` 返回 false；错误里的 no-update reason 是 NSNumber，不能直接强转为 Swift 枚举。
+- **修复与验证**：按官方属性和 selector 接入，按 rawValue 解码原因。原生回调测试校验 10 个 selector、最新版本与失败的区分，以及取消/超时不会重复安装。真实本地签名 feed 与独立 Bundle ID 实测：后台发现不弹窗；确认一次安装后更新至新 build 并自动重启。正式用户设置、后端 lock 和预设保持原样。
+
+
 ## 2026-10-06 退出清理传入空任务导致蓝牙断开被跳过
 
 - **问题与原因**：电量刷新或重连任务尚未建立时，`asyncio.gather(None, ...)` 抛出 TypeError，后续 `manager.disconnect()` 不会执行；上下文异常时，放在 `yield` 后的清理也会被跳过。
