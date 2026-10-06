@@ -2,18 +2,22 @@ import AppKit
 import Foundation
 import WebKit
 import CoreBluetooth
+import Sparkle
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var statusItem: NSStatusItem!
     private var window: NSWindow?
     private var webView: WKWebView?
-    private var serverProcess: Process?
+    private let backend = BackendSupervisor()
     // 用于在 Swift 进程内预热 CoreBluetooth，让 macOS 把 BLE 权限归属到 .app Bundle，
     // 而不是落到后端 Python 进程上；后端 bleak 调用才能拿到「点了允许」之后真正可用的状态。
     private var bluetoothWarmer: CBCentralManager?
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
-    static let port = 8765
-    static let localUrl = "http://127.0.0.1:8765/"
     static let workDir: String = {
         if let configured = ProcessInfo.processInfo.environment["GODOX_CONTROLLER_HOME"], !configured.isEmpty {
             return URL(fileURLWithPath: configured).standardizedFileURL.path
@@ -48,8 +52,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // 否则 Python 后端的 bleak 调用会在系统层断链（弹窗能弹但 allow 不生效）。
         warmUpCoreBluetooth()
 
-        ensureServerRunning()
+        backend.onReady = { [weak self] url in self?.webView?.load(URLRequest(url: url)) }
+        backend.onFailure = { [weak self] detail in self?.showErrorPage(detail) }
         setupFloatingWindow()
+        ensureServerRunning()
 
         // Auto show on first launch
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
@@ -74,55 +80,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func ensureServerRunning() {
-        if !isServerHealthy() {
-            startServer()
-        }
-    }
-
-    func isServerHealthy() -> Bool {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
-        p.arguments = ["--noproxy", "*", "--max-time", "1", "-s", Self.localUrl + "api/health"]
-        let pipe = Pipe()
-        p.standardOutput = pipe
-        p.standardError = Pipe()
-        do {
-            try p.run()
-            p.waitUntilExit()
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let response = String(data: data, encoding: .utf8) ?? ""
-            return p.terminationStatus == 0 && response.contains("\"app\":\"godox-controller\"")
-        } catch {
-            return false
-        }
-    }
-
-    func startServer() {
-        let p = Process()
-        if let backend = Self.bundledBackendURL {
-            p.executableURL = backend
-            p.currentDirectoryURL = backend.deletingLastPathComponent()
-            // 告诉 Python 后端「真正的 .app 在哪」，让它把 NSBundle.mainBundle() 换过来；
-            // 否则 CoreBluetooth 权限会绑到 Python.framework 而不是 com.godoxcontroller.desktop。
-            if let appURL = Bundle.main.bundleURL.deletingLastPathComponent() as URL? {
-                let appBundlePath = appURL.path
-                if appBundlePath.hasSuffix(".app") {
-                    var env = p.environment ?? ProcessInfo.processInfo.environment
-                    env["GODOX_APP_BUNDLE_PATH"] = appBundlePath
-                    p.environment = env
-                }
-            }
+        if let executable = Self.bundledBackendURL {
+            backend.refresh(executable: executable, arguments: [], directory: executable.deletingLastPathComponent())
         } else {
-            let venvPython = Self.workDir + "/.venv/bin/python"
-            p.executableURL = URL(fileURLWithPath: venvPython)
-            p.arguments = ["-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", String(Self.port)]
-            p.currentDirectoryURL = URL(fileURLWithPath: Self.workDir)
-        }
-        do {
-            try p.run()
-            serverProcess = p
-        } catch {
-            print("Failed to start uvicorn: \(error)")
+            let python = URL(fileURLWithPath: Self.workDir + "/.venv/bin/python")
+            backend.refresh(executable: python, arguments: ["-u", Self.workDir + "/app_backend.py"],
+                            directory: URL(fileURLWithPath: Self.workDir))
         }
     }
 
@@ -146,7 +109,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         self.window = win
         self.webView = wv
         showLoadingPage()
-        loadConsoleWhenReady()
     }
 
     func showLoadingPage() {
@@ -159,24 +121,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         webView?.loadHTMLString(html, baseURL: nil)
     }
 
-    func loadConsoleWhenReady(attempt: Int = 0) {
-        if isServerHealthy(), let url = URL(string: Self.localUrl) {
-            webView?.load(URLRequest(url: url))
-            return
-        }
-
-        // 打包版首次启动需要解包并初始化 BLE 运行时；在其完成前保留加载页，避免白屏。
-        if attempt < 60 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-                self?.loadConsoleWhenReady(attempt: attempt + 1)
-            }
-            return
-        }
-
-        let errorHtml = """
-        <!doctype html><meta charset=\"utf-8\"><style>body{margin:0;display:grid;place-items:center;height:100vh;background:#0d0f12;color:#f0f3f6;font-family:-apple-system,system-ui}main{text-align:center}button{margin-top:16px;padding:8px 14px;border:0;border-radius:6px;background:#e58e26;color:#000;font-weight:600}</style><main><strong>控制台服务尚未启动</strong><p>请稍候后在菜单栏选择“刷新控制面板”。</p></main>
-        """
-        webView?.loadHTMLString(errorHtml, baseURL: nil)
+    func showErrorPage(_ detail: String) {
+        let escaped = detail.replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+        let html = """
+        <!doctype html><meta charset="utf-8"><style>body{margin:0;display:grid;place-items:center;min-height:100vh;background:#0d0f12;color:#f0f3f6;font-family:-apple-system,system-ui}main{max-width:760px;padding:32px}pre{white-space:pre-wrap;color:#aeb8c4;font:14px system-ui}</style><main><h3>控制台服务启动失败</h3><pre>
+        """ + escaped + "</pre><p>请在菜单栏选择“刷新控制面板”重试。</p></main>"
+        webView?.loadHTMLString(html, baseURL: nil)
     }
 
     @objc func statusItemClicked(_ sender: NSStatusBarButton) {
@@ -227,7 +178,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func showContextMenu(_ button: NSStatusBarButton) {
         let menu = NSMenu()
-        let titleItem = NSMenuItem(title: "神牛引闪器控制台 (127.0.0.1:8765)", action: nil, keyEquivalent: "")
+        let titleItem = NSMenuItem(title: "神牛引闪器控制台", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
 
@@ -245,6 +196,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         reloadItem.target = self
         menu.addItem(reloadItem)
 
+        let updateItem = NSMenuItem(
+            title: "检查更新…",
+            action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
+            keyEquivalent: "u"
+        )
+        updateItem.target = updaterController
+        menu.addItem(updateItem)
+
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(title: "退出控制台", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -256,45 +215,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     @objc func openBrowserAction() {
-        if let url = URL(string: Self.localUrl) {
+        if let url = backend.baseURL, backend.state == .ready {
             NSWorkspace.shared.open(url)
         }
     }
 
     @objc func reloadAction() {
-        showLoadingPage()
-        loadConsoleWhenReady()
+        if backend.state != .ready { showLoadingPage() }
+        ensureServerRunning()
     }
 
     @objc func testFireAction() {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
-        p.arguments = ["--noproxy", "*", "-s", "-X", "POST", Self.localUrl + "api/test_fire"]
-        let pipe = Pipe()
-        p.standardOutput = pipe
-        p.standardError = Pipe()
-        DispatchQueue.global(qos: .userInitiated).async {
-            do {
-                try p.run()
-                p.waitUntilExit()
-                let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                let response = String(data: data, encoding: .utf8) ?? ""
-                let success = response.contains("\"success\":true")
-                let title = success ? "引闪器已确认试闪指令" : "试闪失败"
-                let detail = success ? "请观察实体闪光灯是否触发。" : "请确认引闪器已连接、在蓝牙范围内后重试。"
-                DispatchQueue.main.async {
-                    let alert = NSAlert()
-                    alert.messageText = title
-                    alert.informativeText = detail
-                    alert.addButton(withTitle: "好")
-                    alert.runModal()
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    let alert = NSAlert(error: error)
-                    alert.runModal()
-                }
-            }
+        backend.post("api/test_fire") { success in
+            let alert = NSAlert()
+            alert.messageText = success ? "引闪器已确认试闪指令" : "试闪失败"
+            alert.informativeText = success ? "请观察实体闪光灯是否触发。" : "请确认控制台服务正常且引闪器已连接，再重试。"
+            alert.addButton(withTitle: "好")
+            alert.runModal()
         }
     }
 
@@ -309,13 +246,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window?.orderOut(nil)
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
-        serverProcess?.terminate()
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        DispatchQueue.main.async {
+            self.backend.shutdown { sender.reply(toApplicationShouldTerminate: true) }
+        }
+        return .terminateLater
     }
 }
 
-let app = NSApplication.shared
-app.setActivationPolicy(.accessory)
-let delegate = AppDelegate()
-app.delegate = delegate
-app.run()
+@main
+struct GodoxControllerApplication {
+    static func main() {
+        let app = NSApplication.shared
+        app.setActivationPolicy(.accessory)
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        withExtendedLifetime(delegate) { app.run() }
+    }
+}

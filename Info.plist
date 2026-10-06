@@ -13,14 +13,28 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.1</string>
+    <string>1.6</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>6</string>
     <key>LSMinimumSystemVersion</key>
     <string>11.0</string>
     <key>LSUIElement</key>
     <true/>
     <key>NSBluetoothAlwaysUsageDescription</key>
     <string>需要使用蓝牙直连神牛引闪器进行无线调参控制</string>
+    <key>SUFeedURL</key>
+    <string>https://github.com/qitiandashenggogogo/godox-flash-controller/releases/latest/download/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>CHSaNfgtDzkmN+iaIPuLoY0LioLlcisyklQs+f1UFcE=</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUAutomaticallyUpdate</key>
+    <true/>
+    <key>SUVerifyUpdateBeforeExtraction</key>
+    <true/>
+    <key>SURequireSignedFeed</key>
+    <true/>
+    <key>SUSignedFeedFailureExpirationInterval</key>
+    <integer>0</integer>
 </dict>
 </plist>

@@ -1,52 +1,72 @@
 import os
-import sys
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from app.runtime import acquire_backend_lock, INSTANCE_ID, PROTOCOL_VERSION, read_theme, save_theme
+
+# Direct uvicorn imports must also acquire ownership before touching state.
+acquire_backend_lock()
+# Report bundle identity before CoreBluetooth is imported; stderr only, never touches
+# NSBundle.mainBundle(), so it cannot change how Bluetooth authorization is attributed.
+from app.bundle_diagnostics import diagnose
+diagnose()
 from app.ble_manager import manager
 
-# macOS 关键修复：当本进程从 .app/Contents/Resources/backend/GodoxControllerBackend 启动时，
-# NSBundle.mainBundle() 指向的是 Python.framework，不是 com.godoxcontroller.desktop。
-# CoreBluetooth 的权限授权会绑到这个错误的 Bundle 上 → 用户点「允许」无效。
-# 这里强制用真正的 .app Bundle 替换 mainBundle，让后续所有 BLE 调用都绑到正确的 Bundle ID。
-try:
-    from Foundation import NSBundle, NSURL
-    from objc import setAssociatedObject
-    executable_path = os.path.realpath(sys.executable)
-    app_bundle_path = None
-    # 1) 标准启动路径：python 嵌在 .app/Contents/Resources/backend/ 里
-    if executable_path.endswith("/Contents/Resources/" + os.path.basename(executable_path)) or "/Contents/Resources/" in executable_path:
-        candidate = executable_path
-        while candidate and not candidate.endswith(".app"):
-            candidate = os.path.dirname(candidate)
-            if candidate == "/" or not candidate:
-                break
-        if candidate and candidate.endswith(".app"):
-            app_bundle_path = candidate
-    # 2) 兜底：环境变量允许 Swift 外壳显式告诉后端它是谁
-    if not app_bundle_path:
-        env_bundle = os.environ.get("GODOX_APP_BUNDLE_PATH", "").strip()
-        if env_bundle and os.path.isdir(env_bundle):
-            app_bundle_path = env_bundle
-    if app_bundle_path and os.path.isdir(app_bundle_path):
-        real_bundle = NSBundle.bundleWithPath_(app_bundle_path)
-        if real_bundle is not None and real_bundle.bundleIdentifier() == "com.godoxcontroller.desktop":
-            # 把真实 Bundle 挂到 mainBundle 的关联对象上，让所有 NSBundle.mainBundle() 返回它
-            setAssociatedObject(NSBundle, "mainBundle", real_bundle, 1)  # OBJC_ASSOCIATION_RETAIN_NONATOMIC
-            # ble_manager 里的 bleak → CoreBluetooth 后续会读到正确的 Bundle ID
-            print(f"[bundle-fix] Main bundle rebound to: {app_bundle_path}")
-        else:
-            bid = real_bundle.bundleIdentifier() if real_bundle else "nil"
-            print(f"[bundle-fix] WARN: candidate {app_bundle_path} bundleIdentifier={bid}", file=sys.stderr)
-except Exception as e:
-    print(f"[bundle-fix] non-fatal: {e}", file=sys.stderr)
+@asynccontextmanager
+async def lifespan(application):
+    yield
+    manager.auto_reconnect = False
+    if manager.battery_refresh_task and not manager.battery_refresh_task.done():
+        manager.battery_refresh_task.cancel()
+    if manager.reconnect_task and not manager.reconnect_task.done():
+        manager.reconnect_task.cancel()
+    await asyncio.gather(manager.battery_refresh_task, manager.reconnect_task, return_exceptions=True)
+    if manager.client and manager.client.is_connected:
+        await asyncio.wait_for(manager.disconnect(), timeout=2)
 
-app = FastAPI(title="Godox 引闪器桌面控制台")
+
+app = FastAPI(title="Godox 引闪器桌面控制台", lifespan=lifespan)
+
+
+class InstanceGuard:
+    """ASGI middleware that pins every mutating API call to a single page instance."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope["path"].startswith("/api/") and scope["method"] not in {"GET", "HEAD", "OPTIONS"}:
+            headers = dict(scope.get("headers", []))
+            if headers.get(b"x-godox-instance") != INSTANCE_ID.encode():
+                from fastapi.responses import JSONResponse
+                response = JSONResponse(status_code=409, content={"detail": "此页面已过期，请从控制台重新打开。"})
+                await response(scope, receive, send)
+                return
+        await self.app(scope, receive, send)
+
+
+app.add_middleware(InstanceGuard)
+
+
+class ThemeRequest(BaseModel):
+    theme: str
+
+
+@app.post("/api/theme")
+async def set_theme(req: ThemeRequest):
+    if req.theme not in {"dark", "light", "system"}:
+        raise HTTPException(status_code=400, detail="不支持的外观主题")
+    save_theme(req.theme)
+    return {"success": True}
+
 
 @app.get("/api/health")
 async def health():
-    return {"app": "godox-controller", "version": "1.1"}
+    return {"app": "godox-controller", "version": "1.6", "instance_id": INSTANCE_ID, "protocol_version": PROTOCOL_VERSION}
+
 
 class SetGroupRequest(BaseModel):
     group: str
@@ -56,51 +76,65 @@ class SetGroupRequest(BaseModel):
     sound: bool = False
     lamp: bool = False
 
+
 class ConnectRequest(BaseModel):
     address: str = None
+
 
 class ChannelRequest(BaseModel):
     channel: int
 
+
 class GlobalLampRequest(BaseModel):
     lamp_on: bool
+
 
 class GlobalSoundRequest(BaseModel):
     sound_on: bool
 
+
 class AdjustAllRequest(BaseModel):
     delta: int = 1
 
+
 class DisplayModeRequest(BaseModel):
-    mode: str # "fraction", "decimal", "dual"
+    mode: str  # "fraction", "decimal", "dual"
+
 
 class ActiveGroupRequest(BaseModel):
-    group: str # "ALL", "A", "B", "C", "D", "E"
+    group: str  # "ALL", "A", "B", "C", "D", "E"
+
 
 class GroupManageRequest(BaseModel):
     group: str
 
+
 class PresetCreateRequest(BaseModel):
     name: str
+
 
 @app.get("/api/status")
 async def get_status():
     return manager.get_status()
+
 
 @app.post("/api/scan_devices")
 async def scan_devices():
     devs = await manager.scan_devices()
     return {"devices": devs, "status": manager.get_status()}
 
+
 @app.post("/api/connect")
 async def connect(req: ConnectRequest = ConnectRequest()):
     success = await manager.connect(req.address)
     return {"success": success, "status": manager.get_status()}
 
+
 @app.post("/api/disconnect")
 async def disconnect():
     await manager.disconnect()
     return {"success": True, "status": manager.get_status()}
+
 
 @app.post("/api/set_group")
 async def set_group(req: SetGroupRequest):
@@ -114,15 +148,18 @@ async def set_group(req: SetGroupRequest):
     )
     return {"success": success, "status": manager.get_status()}
 
+
 @app.post("/api/add_group")
 async def add_group(req: GroupManageRequest):
     success = manager.add_group(req.group)
     return {"success": success, "status": manager.get_status()}
 
+
 @app.post("/api/remove_group")
 async def remove_group(req: GroupManageRequest):
     success = manager.remove_group(req.group)
     return {"success": success, "status": manager.get_status()}
+
 
 @app.post("/api/set_channel")
 async def set_channel(req: ChannelRequest):
@@ -131,20 +168,24 @@ async def set_channel(req: ChannelRequest):
     success = await manager.send_tc_command(channel=req.channel)
     return {"success": success, "status": manager.get_status()}
 
+
 @app.post("/api/set_global_lamp")
 async def set_global_lamp(req: GlobalLampRequest):
     success = await manager.send_tc_command(global_lamp=req.lamp_on)
     return {"success": success, "status": manager.get_status()}
+
 
 @app.post("/api/set_global_sound")
 async def set_global_sound(req: GlobalSoundRequest):
     success = await manager.send_tc_command(global_sound=req.sound_on)
     return {"success": success, "status": manager.get_status()}
 
+
 @app.post("/api/adjust_all")
 async def adjust_all(req: AdjustAllRequest):
     success = await manager.adjust_all_groups(req.delta)
     return {"success": success, "status": manager.get_status()}
+
 
 @app.post("/api/set_display_mode")
 async def set_display_mode(req: DisplayModeRequest):
@@ -153,14 +194,17 @@ async def set_display_mode(req: DisplayModeRequest):
     manager.set_display_mode(req.mode)
     return {"success": True, "status": manager.get_status()}
 
+
 @app.post("/api/set_active_group")
 async def set_active_group(req: ActiveGroupRequest):
     manager.set_active_group(req.group)
     return {"success": True, "status": manager.get_status()}
 
+
 @app.get("/api/presets")
 async def list_presets():
     return {"presets": manager.list_presets(), "default_preset_id": manager.default_preset_id}
+
 
 @app.post("/api/presets")
 async def create_preset(req: PresetCreateRequest):
@@ -170,28 +214,32 @@ async def create_preset(req: PresetCreateRequest):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {"success": True, "preset": preset, "status": manager.get_status()}
 
+
 @app.post("/api/presets/{preset_id}/apply")
 async def apply_preset(preset_id: str):
     if not manager.apply_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该方案")
+        raise HTTPException(status_code=404, detail="未找到该预设")
     return {"success": True, "status": manager.get_status()}
+
 
 @app.post("/api/presets/{preset_id}/default")
 async def set_default_preset(preset_id: str):
     if not manager.set_default_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该方案")
+        raise HTTPException(status_code=404, detail="未找到该预设")
     return {"success": True, "status": manager.get_status()}
+
 
 @app.post("/api/presets/apply_default")
 async def apply_default_preset():
     if not manager.apply_default_preset():
-        raise HTTPException(status_code=404, detail="尚未设定默认方案")
+        raise HTTPException(status_code=404, detail="尚未设定默认预设")
     return {"success": True, "status": manager.get_status()}
+
 
 @app.delete("/api/presets/{preset_id}")
 async def delete_preset(preset_id: str):
     if not manager.delete_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该方案")
+        raise HTTPException(status_code=404, detail="未找到该预设")
     return {"success": True, "status": manager.get_status()}
 
 
@@ -200,10 +248,12 @@ async def all_off():
     success = await manager.all_off()
     return {"success": success, "status": manager.get_status()}
 
+
 @app.post("/api/toggle_all_off")
 async def toggle_all_off():
     result = await manager.toggle_all_off()
     return {**result, "status": manager.get_status()}
+
 
 @app.post("/api/all_off_form", response_class=HTMLResponse)
 async def all_off_form():
@@ -216,10 +266,12 @@ async def all_off_form():
              "<a href='/' style='color:#e58e26'>← 返回</a></body>")
     return HTMLResponse(html)
 
+
 @app.post("/api/sync_to_device")
 async def sync_to_device():
     success = await manager.sync_all_to_device()
     return {"success": success, "status": manager.get_status()}
+
 
 @app.post("/api/sync_to_device_form", response_class=HTMLResponse)
 async def sync_to_device_form():
@@ -230,9 +282,11 @@ async def sync_to_device_form():
              "<a href='/' style='color:#e58e26'>← 返回</a></body>")
     return HTMLResponse(html)
 
+
 @app.post("/api/test_fire")
 async def test_fire():
     return await manager.test_fire()
+
 
 @app.post("/api/save_screenshot")
 async def save_screenshot(request: Request):
@@ -244,6 +298,7 @@ async def save_screenshot(request: Request):
         f.write(data)
     return {"success": True, "path": out_path, "size": len(data)}
 
+
 @app.post("/api/reset_all")
 async def reset_all():
     results = {}
@@ -253,16 +308,17 @@ async def reset_all():
         results[g] = ok
     return {"success": True, "results": results, "status": manager.get_status()}
 
+
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(static_dir, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 
 @app.get("/")
 async def serve_index():
     index_file = os.path.join(static_dir, "index.html")
     if os.path.exists(index_file):
-        return FileResponse(
-            index_file,
-            headers={"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"},
-        )
+        with open(index_file, encoding="utf-8") as handle:
+            html = handle.read().replace("__GODOX_INSTANCE_ID__", INSTANCE_ID).replace("__GODOX_THEME__", read_theme())
+        return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"})
     return HTMLResponse("<h1>Godox 引闪器桌面控制台</h1><p>请配置 static/index.html</p>")
