@@ -39,7 +39,7 @@ swiftc -swift-version 5 -target x86_64-apple-macos11.0 -o "$STAGE/preview-x86_64
     "${DEFINES[@]}" "${SOURCES[@]}" "${FRAMEWORKS[@]}" "${SPARKLE_FLAGS[@]}"
 lipo -create "$STAGE/preview-arm64" "$STAGE/preview-x86_64" -output "$OUTPUT/Contents/MacOS/GodoxUpdatePreview"
 
-# 预览 Info.plist：版本号沿用正式版（要显示"当前 1.6.1"），但刻意不带任何更新源配置。
+# 预览 Info.plist：当前版本号沿用正式版，但刻意不带任何更新源配置。
 "$PYTHON" - "$OUTPUT/Contents/Info.plist" "$BUNDLE_ID" <<'PYTHON'
 import plistlib
 import sys
