@@ -25,14 +25,6 @@ if [ ! -d "Godox Controller.app" ]; then
     bash build-app.sh
 fi
 
-# 3. 检查后台服务是否已运行
-if ! curl --noproxy '*' -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8765/ | grep -q "200"; then
-    echo "启动本地服务 (127.0.0.1:8765)..."
-    nohup .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8765 > app.log 2>&1 &
-    sleep 1.5
-fi
-
-# 4. 打开原生桌面控制浮窗
+# 3. 打开原生桌面控制浮窗（后端由外壳统一管理动态端口，不再预启动固定端口服务）
 echo "正在打开控制台..."
-open "Godox Controller.app" || open "http://127.0.0.1:8765/"
-echo "控制台已就绪！"
+open "Godox Controller.app"

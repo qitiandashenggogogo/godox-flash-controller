@@ -2,6 +2,18 @@
 
 <!-- 新记录插在这一行下面 -->
 
+## 2026-10-06 蓝牙诊断不能把 NSBundle 关联对象当作授权修复
+
+- **问题描述**：待合并补丁把 `.app` 路径再删掉一层，并用 `objc.setAssociatedObject(NSBundle, "mainBundle", ...)` 宣称重绑 Python 的主 Bundle。
+- **原因与证据**：Swift 的 `Bundle.main.bundleURL` 已是 `.app` 本身；隔离 Python 实测设置关联对象前后，`NSBundle.mainBundle()` 路径与 ID 均未改变。本机 macOS 26.6.2 上，Bleak 读取该 ID 的分支仅用于 macOS 12.0–12.2 的日志。同期 TCC 日志实际以外壳 `com.godoxcontroller.desktop` 为主体，并匹配现有证书要求，不能据 Python 的 Bundle ID 推断授权主体错误。
+- **处理与验证**：BackendSupervisor 传入真实 `.app` 路径；导入 BLE 前将身份诊断写到 stderr，不重绑 Foundation，不污染 READY。源码 18 项回归全部通过，覆盖外壳路径、ID 校验、诊断输出和既有启动行为；此结果不证明新打包应用的真实蓝牙连接已通过。
+
+## 2026-10-06 控制台固定 8765 被占用后无法启动，动态端口 + 实例身份方案落地
+
+- **问题描述**：8765 被其他本机服务占用时控制台停在“服务尚未启动”；后端重启后旧浏览器页面仍可能写中新实例（端口可复用）。
+- **解决方案**：后端统一入口 bind 127.0.0.1:0 动态端口，导入 manager 前持跨进程 flock（`backend.lock`，写 pid/instance_id/port/协议版本），READY 行报告实际端口；Swift BackendSupervisor 异步管理生命周期与刷新；变更 API 校验 `X-Godox-Instance`（409 拒绝陈旧页面）；外观主题从 localStorage 迁至 `appearance.json`；`.command` 不再预启动固定端口服务。
+- **验证**：`tests/test_startup.py`（占用、双实例、端口复用、父进程退出）与 `tests/test_supervisor.py` 全过；构建需 `bash build-app.sh --bundle-backend`。诊断时读本机 `~/Library/Application Support/Godox Controller/backend.lock` 获得当前端口，不再写死 8765。
+
 ## 2026-09-24 在 worktree 里构建，DMG 产物落在隐藏目录，主项目 dist/ 里"找不到新版本"
 
 - **问题描述**：v1.4 构建、验签、安装全部成功，但大盛在主项目 `dist/` 里找不到 `GodoxController-v1.4.dmg`，以为没保存到本地，没法拷给同事。

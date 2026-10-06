@@ -9,8 +9,8 @@ fi
 
 SPARKLE_ROOT="$(bash scripts/ensure-sparkle.sh)"
 echo "编译 macOS 原生应用（arm64 + x86_64 双架构，最低 macOS 11）..."
-swiftc -O -swift-version 5 -target arm64-apple-macos11.0 -o GodoxController-arm64 GodoxController.swift -framework WebKit -framework AppKit -F "$SPARKLE_ROOT" -framework Sparkle -Xlinker -rpath -Xlinker '@executable_path/../Frameworks'
-swiftc -O -swift-version 5 -target x86_64-apple-macos11.0 -o GodoxController-x86_64 GodoxController.swift -framework WebKit -framework AppKit -F "$SPARKLE_ROOT" -framework Sparkle -Xlinker -rpath -Xlinker '@executable_path/../Frameworks'
+swiftc -O -swift-version 5 -target arm64-apple-macos11.0 -o GodoxController-arm64 GodoxController.swift BackendSupervisor.swift -framework WebKit -framework AppKit -F "$SPARKLE_ROOT" -framework Sparkle -Xlinker -rpath -Xlinker '@executable_path/../Frameworks'
+swiftc -O -swift-version 5 -target x86_64-apple-macos11.0 -o GodoxController-x86_64 GodoxController.swift BackendSupervisor.swift -framework WebKit -framework AppKit -F "$SPARKLE_ROOT" -framework Sparkle -Xlinker -rpath -Xlinker '@executable_path/../Frameworks'
 lipo -create GodoxController-arm64 GodoxController-x86_64 -output GodoxController
 rm GodoxController-arm64 GodoxController-x86_64
 mkdir -p "Godox Controller.app/Contents/MacOS" "Godox Controller.app/Contents/Resources" "Godox Controller.app/Contents/Frameworks"

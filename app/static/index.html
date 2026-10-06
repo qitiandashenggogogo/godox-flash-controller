@@ -918,10 +918,13 @@
     }
   </style>
   <script>
-    // 防闪烁：首屏渲染前先按上次选择/系统外观定好主题
+    // 防闪烁：首屏渲染前先按上次选择/系统外观定好主题（服务端权威值优先）
     (function(){
-      var c = localStorage.getItem('godox-theme');
-      if (c !== 'dark' && c !== 'light') { c = 'system'; }
+      var c = '__GODOX_THEME__';
+      if (c !== 'dark' && c !== 'light' && c !== 'system') {
+        c = localStorage.getItem('godox-theme');
+      }
+      if (c !== 'dark' && c !== 'light' && c !== 'system') { c = 'system'; }
       var m = window.matchMedia('(prefers-color-scheme: dark)');
       document.documentElement.dataset.theme = (c === 'system' ? (m.matches ? 'dark' : 'light') : c);
     })();
@@ -1110,12 +1113,38 @@
   </div>
 
   <script>
+    const godoxInstanceID = '__GODOX_INSTANCE_ID__';
+    const originalFetch = window.fetch.bind(window);
+    let staleNoticeShown = false;
+    window.fetch = async function(input, options) {
+      const request = new Request(input, options);
+      const url = new URL(request.url);
+      if (url.origin === location.origin && url.pathname.startsWith('/api/')) {
+        request.headers.set('X-Godox-Instance', godoxInstanceID);
+      }
+      const response = await originalFetch(request);
+      if (response.status === 409 && url.origin === location.origin && url.pathname.startsWith('/api/')) {
+        if (!staleNoticeShown) {
+          staleNoticeShown = true;
+          const notice = document.createElement('div');
+          notice.textContent = '此页面已过期，请从菜单栏重新打开控制台。';
+          notice.style.cssText = 'position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:#0d0f12;color:#f0f3f6;font:18px system-ui';
+          document.body.appendChild(notice);
+        }
+        throw new Error('此页面已过期');
+      }
+      return response;
+    };
     // ===== 主题管理：跟随系统 / 深色 / 浅色 =====
     const THEME_KEY = 'godox-theme';
     const themeMedia = window.matchMedia('(prefers-color-scheme: dark)');
+    let themeChoice = '__GODOX_THEME__';
+    if (themeChoice !== 'dark' && themeChoice !== 'light' && themeChoice !== 'system') {
+      const cached = localStorage.getItem(THEME_KEY);
+      themeChoice = (cached === 'dark' || cached === 'light' || cached === 'system') ? cached : 'system';
+    }
     function getThemeChoice() {
-      const v = localStorage.getItem(THEME_KEY);
-      return (v === 'dark' || v === 'light' || v === 'system') ? v : 'system';
+      return (themeChoice === 'dark' || themeChoice === 'light' || themeChoice === 'system') ? themeChoice : 'system';
     }
     function applyTheme(choice) {
       const resolved = choice === 'system' ? (themeMedia.matches ? 'dark' : 'light') : choice;
@@ -1125,7 +1154,9 @@
       });
     }
     function setThemeChoice(choice) {
+      themeChoice = choice;
       localStorage.setItem(THEME_KEY, choice);
+      fetch('/api/theme', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({theme:choice})}).catch(console.error);
       applyTheme(choice);
     }
     themeMedia.addEventListener('change', () => {
