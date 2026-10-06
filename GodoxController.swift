@@ -102,6 +102,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if let backend = Self.bundledBackendURL {
             p.executableURL = backend
             p.currentDirectoryURL = backend.deletingLastPathComponent()
+            // 告诉 Python 后端「真正的 .app 在哪」，让它把 NSBundle.mainBundle() 换过来；
+            // 否则 CoreBluetooth 权限会绑到 Python.framework 而不是 com.godoxcontroller.desktop。
+            if let appURL = Bundle.main.bundleURL.deletingLastPathComponent() as URL? {
+                let appBundlePath = appURL.path
+                if appBundlePath.hasSuffix(".app") {
+                    var env = p.environment ?? ProcessInfo.processInfo.environment
+                    env["GODOX_APP_BUNDLE_PATH"] = appBundlePath
+                    p.environment = env
+                }
+            }
         } else {
             let venvPython = Self.workDir + "/.venv/bin/python"
             p.executableURL = URL(fileURLWithPath: venvPython)

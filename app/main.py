@@ -1,9 +1,46 @@
 import os
+import sys
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from app.ble_manager import manager
+
+# macOS 关键修复：当本进程从 .app/Contents/Resources/backend/GodoxControllerBackend 启动时，
+# NSBundle.mainBundle() 指向的是 Python.framework，不是 com.godoxcontroller.desktop。
+# CoreBluetooth 的权限授权会绑到这个错误的 Bundle 上 → 用户点「允许」无效。
+# 这里强制用真正的 .app Bundle 替换 mainBundle，让后续所有 BLE 调用都绑到正确的 Bundle ID。
+try:
+    from Foundation import NSBundle, NSURL
+    from objc import setAssociatedObject
+    executable_path = os.path.realpath(sys.executable)
+    app_bundle_path = None
+    # 1) 标准启动路径：python 嵌在 .app/Contents/Resources/backend/ 里
+    if executable_path.endswith("/Contents/Resources/" + os.path.basename(executable_path)) or "/Contents/Resources/" in executable_path:
+        candidate = executable_path
+        while candidate and not candidate.endswith(".app"):
+            candidate = os.path.dirname(candidate)
+            if candidate == "/" or not candidate:
+                break
+        if candidate and candidate.endswith(".app"):
+            app_bundle_path = candidate
+    # 2) 兜底：环境变量允许 Swift 外壳显式告诉后端它是谁
+    if not app_bundle_path:
+        env_bundle = os.environ.get("GODOX_APP_BUNDLE_PATH", "").strip()
+        if env_bundle and os.path.isdir(env_bundle):
+            app_bundle_path = env_bundle
+    if app_bundle_path and os.path.isdir(app_bundle_path):
+        real_bundle = NSBundle.bundleWithPath_(app_bundle_path)
+        if real_bundle is not None and real_bundle.bundleIdentifier() == "com.godoxcontroller.desktop":
+            # 把真实 Bundle 挂到 mainBundle 的关联对象上，让所有 NSBundle.mainBundle() 返回它
+            setAssociatedObject(NSBundle, "mainBundle", real_bundle, 1)  # OBJC_ASSOCIATION_RETAIN_NONATOMIC
+            # ble_manager 里的 bleak → CoreBluetooth 后续会读到正确的 Bundle ID
+            print(f"[bundle-fix] Main bundle rebound to: {app_bundle_path}")
+        else:
+            bid = real_bundle.bundleIdentifier() if real_bundle else "nil"
+            print(f"[bundle-fix] WARN: candidate {app_bundle_path} bundleIdentifier={bid}", file=sys.stderr)
+except Exception as e:
+    print(f"[bundle-fix] non-fatal: {e}", file=sys.stderr)
 
 app = FastAPI(title="Godox 引闪器桌面控制台")
 
