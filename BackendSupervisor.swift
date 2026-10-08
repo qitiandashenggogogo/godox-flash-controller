@@ -98,7 +98,7 @@ final class BackendSupervisor {
                     completion?()
                 } else {
                     self.state = .failed
-                    let cause = self.pendingFailure ?? "控制台后端已退出（状态 " + String(child.terminationStatus) + "）。"
+                    let cause = self.pendingFailure ?? "控制台已停止运行（状态 " + String(child.terminationStatus) + "）。"
                     self.onFailure?(cause + (self.diagnostics.isEmpty ? "" : String(UnicodeScalar(10)!) + self.diagnostics))
                 }
             }
@@ -124,7 +124,7 @@ final class BackendSupervisor {
                 if chunk.isEmpty { break }
                 buffer.append(chunk)
                 if buffer.count > 16384 {
-                    DispatchQueue.main.async { self?.fail("后端就绪信息超过长度限制。", generation: current) }
+                    DispatchQueue.main.async { self?.fail("控制台启动响应过长。", generation: current) }
                     break
                 }
                 while let end = buffer.firstIndex(of: 10) {
@@ -133,7 +133,7 @@ final class BackendSupervisor {
                     guard !announced else { continue }
                     let prefix = Data("GODOX_READY ".utf8)
                     guard line.starts(with: prefix) else {
-                        DispatchQueue.main.async { self?.fail("后端就绪信息格式错误。", generation: current) }
+                        DispatchQueue.main.async { self?.fail("控制台启动响应格式错误。", generation: current) }
                         announced = true
                         continue
                     }
@@ -142,7 +142,7 @@ final class BackendSupervisor {
                     guard let ready = try? decoder.decode(Ready.self, from: line.dropFirst(prefix.count)),
                           ready.protocolVersion == 1, (1...65535).contains(ready.port),
                           ready.nonce == nonce, !ready.instanceId.isEmpty else {
-                        DispatchQueue.main.async { self?.fail("后端就绪信息或实例身份无效。", generation: current) }
+                        DispatchQueue.main.async { self?.fail("控制台启动响应无效。", generation: current) }
                         announced = true
                         continue
                     }
@@ -170,13 +170,13 @@ final class BackendSupervisor {
                 DispatchQueue.main.async {
                     guard let self = self, current == self.generation else { return }
                     self.process = nil
-                    self.fail("无法启动控制台后端：" + error.localizedDescription, generation: current)
+                    self.fail("无法启动控制台：" + error.localizedDescription, generation: current)
                 }
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 30) { [weak self] in
             guard let self = self, current == self.generation, self.state == .starting else { return }
-            self.fail("后端启动超时，请刷新重试。", generation: current)
+            self.fail("启动超时，请刷新面板重试。", generation: current)
         }
     }
 
@@ -200,9 +200,9 @@ final class BackendSupervisor {
                         self.verify(current, remaining: remaining - 1)
                     }
                 } else if self.state == .ready {
-                    self.onFailure?("无法连接当前控制台后端，请稍后刷新重试。")
+                    self.onFailure?("无法连接控制台，请稍后刷新。")
                 } else {
-                    self.fail("后端已启动，但健康检查或实例身份校验失败。", generation: current)
+                    self.fail("控制台连接异常，请刷新面板重试。", generation: current)
                 }
             }
         }

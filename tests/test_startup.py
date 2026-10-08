@@ -117,14 +117,14 @@ class StartupTests(unittest.TestCase):
                 duplicate = subprocess.run(COMMAND, cwd=ROOT, env=env, input=b'', capture_output=True, timeout=20)
                 self.assertNotEqual(duplicate.returncode, 0)
                 self.assertNotIn(b'GODOX_READY', duplicate.stdout)
-                self.assertIn('已有神牛后端', duplicate.stderr.decode())
+                self.assertIn('已有控制台运行', duplicate.stderr.decode())
                 after = {p.name: p.read_bytes() for p in Path(state).iterdir() if p.is_file()}
                 self.assertEqual(before, after)
                 self.assertEqual(request(first['port'], '/api/health')[0], 200)
                 if not BACKEND:
                     direct = subprocess.run([sys.executable, '-c', 'import app.main'], cwd=ROOT, env=env, capture_output=True, timeout=20)
                     self.assertNotEqual(direct.returncode, 0)
-                    self.assertIn('已有神牛后端', direct.stderr.decode())
+                    self.assertIn('已有控制台运行', direct.stderr.decode())
 
     def test_old_page_rejected_after_exact_port_reuse(self):
         with tempfile.TemporaryDirectory() as state:

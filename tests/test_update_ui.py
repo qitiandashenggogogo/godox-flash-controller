@@ -95,14 +95,14 @@ class IndicatorLifecycleTests(unittest.TestCase):
             self.assertEqual(found['accessibilityDescription'], '发现新版 v1.6.2')
             self.assertEqual(found['menuItemTitle'], '更新到 v1.6.2…')
             self.assertEqual(found['consoleEntryTitle'], '更新到 v1.6.2')
-            self.assertEqual(found['consoleEntryAccessibleLabel'], '安装可用更新 v1.6.2')
+            self.assertEqual(found['consoleEntryAccessibleLabel'], '更新到 v1.6.2')
 
     def test_checking_with_nothing_new_leaves_the_quiet_app_quiet(self):
         with UpdateCore('/tmp') as core:
             fresh = core.state('started', 'noUpdateFound')
             self.assertFalse(fresh['showsIndicator'])
             self.assertEqual(fresh['availability'], 'upToDate')
-            self.assertIn('已是最新版本', fresh['accessibilityDescription'])
+            self.assertIn('已是最新版', fresh['accessibilityDescription'])
 
     def test_deferring_clears_the_dot_but_keeps_the_entry_working(self):
         with UpdateCore('/tmp') as core:

@@ -212,7 +212,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
             backing: .buffered,
             defer: false
         )
-        win.title = "神牛引闪器桌面控制台"
+        win.title = "引闪控制台"
         win.level = .floating // 窗口始终置顶，方便盖在其他工作软件上方
         win.delegate = self
 
@@ -232,7 +232,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         <!doctype html><meta charset=\"utf-8\"><style>
         body{margin:0;display:grid;place-items:center;height:100vh;background:#0d0f12;color:#f0f3f6;font-family:-apple-system,system-ui}
         main{text-align:center}.spinner{width:26px;height:26px;border:3px solid #3d4556;border-top-color:#e58e26;border-radius:50%;margin:0 auto 16px;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-        p{color:#8b949e;font-size:14px}</style><main><div class=\"spinner\"></div><strong>正在启动神牛控制台…</strong><p>正在连接本机服务</p></main>
+        p{color:#8b949e;font-size:14px}</style><main><div class=\"spinner\"></div><strong>正在启动控制台…</strong><p>请稍等</p></main>
         """
         webView?.loadHTMLString(html, baseURL: nil)
     }
@@ -241,8 +241,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         let escaped = detail.replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
         let html = """
-        <!doctype html><meta charset="utf-8"><style>body{margin:0;display:grid;place-items:center;min-height:100vh;background:#0d0f12;color:#f0f3f6;font-family:-apple-system,system-ui}main{max-width:760px;padding:32px}pre{white-space:pre-wrap;color:#aeb8c4;font:14px system-ui}</style><main><h3>控制台服务启动失败</h3><pre>
-        """ + escaped + "</pre><p>请在菜单栏选择“刷新控制面板”重试。</p></main>"
+        <!doctype html><meta charset="utf-8"><style>body{margin:0;display:grid;place-items:center;min-height:100vh;background:#0d0f12;color:#f0f3f6;font-family:-apple-system,system-ui}main{max-width:760px;padding:32px}pre{white-space:pre-wrap;color:#aeb8c4;font:14px system-ui}</style><main><h3>控制台启动未成功</h3><pre>
+        """ + escaped + "</pre><p>在菜单栏点“刷新面板”重试。</p></main>"
         webView?.loadHTMLString(html, baseURL: nil)
     }
 
@@ -294,21 +294,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
 
     func showContextMenu(_ button: NSStatusBarButton) {
         let menu = NSMenu()
-        let titleItem = NSMenuItem(title: "神牛引闪器控制台", action: nil, keyEquivalent: "")
+        let titleItem = NSMenuItem(title: "引闪控制台", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
 
         menu.addItem(NSMenuItem.separator())
 
-        let openBrowserItem = NSMenuItem(title: "在独立浏览器中打开", action: #selector(openBrowserAction), keyEquivalent: "b")
+        let openBrowserItem = NSMenuItem(title: "浏览器打开", action: #selector(openBrowserAction), keyEquivalent: "b")
         openBrowserItem.target = self
         menu.addItem(openBrowserItem)
 
-        let fireItem = NSMenuItem(title: "⚡ 立即试闪 (TEST FIRE)", action: #selector(testFireAction), keyEquivalent: "t")
+        let fireItem = NSMenuItem(title: "⚡ 试闪", action: #selector(testFireAction), keyEquivalent: "t")
         fireItem.target = self
         menu.addItem(fireItem)
 
-        let reloadItem = NSMenuItem(title: "刷新控制面板", action: #selector(reloadAction), keyEquivalent: "r")
+        let reloadItem = NSMenuItem(title: "刷新面板", action: #selector(reloadAction), keyEquivalent: "r")
         reloadItem.target = self
         menu.addItem(reloadItem)
 
@@ -358,9 +358,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     @objc func testFireAction() {
         backend.post("api/test_fire") { success in
             let alert = NSAlert()
-            alert.messageText = success ? "引闪器已确认试闪指令" : "试闪失败"
-            alert.informativeText = success ? "请观察实体闪光灯是否触发。" : "请确认控制台服务正常且引闪器已连接，再重试。"
-            alert.addButton(withTitle: "好")
+            alert.messageText = success ? "引闪器已确认试闪" : "未能试闪"
+            alert.informativeText = success ? "请观察闪光灯是否闪光。" : "连接引闪器后再试；面板异常请刷新。"
+            alert.addButton(withTitle: "知道了")
             alert.runModal()
         }
     }

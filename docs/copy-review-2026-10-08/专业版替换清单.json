@@ -1,0 +1,992 @@
+{
+  "date": "2026-10-08",
+  "protected": [
+    "无线频道 (CH)",
+    "M",
+    "TTL",
+    "OFF"
+  ],
+  "note": "本次实际文字替换；部分条目是句内词组，按顺序合并应用。功能不改。",
+  "replacements": [
+    {
+      "file": "app/static/index.html",
+      "original": "神牛引闪器桌面控制台",
+      "new": "引闪控制台"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "引闪器桌面控制台",
+      "new": "引闪控制台"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "id=\"godoxUpdateEntry\" hidden>更新",
+      "new": "id=\"godoxUpdateEntry\" hidden>软件更新"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在初始化...",
+      "new": "正在准备…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "<strong>未连接引闪器。</strong>当前调整只保存在电脑，不会控制引闪器。",
+      "new": "<strong>未连接引闪器。</strong>预设可保存到电脑；灯组操作需连接。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "<strong>已连接引闪器。</strong>单组调整会立即写入；载入预设仅改桌面，点“同步”才整体写入。",
+      "new": "<strong>已连接引闪器。</strong>单组调整直接发送。预设需点“写入引闪器”。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "当前无线频道，点击后输入 1 到 32",
+      "new": "更改频道，输入 1 到 32 的整数"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "点击后直接输入 1-32 修改频道",
+      "new": "点击修改频道，范围 1–32"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "功率显示格式",
+      "new": "功率格式"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "分母 (1/32)",
+      "new": "分数显示 (1/32)"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "数字 (5.0)",
+      "new": "数字显示 (5.0)"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "一键全开造型灯:",
+      "new": "全局造型灯:"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "选择已保存的预设…",
+      "new": "选择预设…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "＋ 保存当前为预设",
+      "new": "＋ 保存预设"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "更多预设操作",
+      "new": "更多操作"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "设为开机默认预设",
+      "new": "设为常用"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "载入开机默认预设",
+      "new": "载入常用"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "删除当前预设",
+      "new": "删除预设"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "载入预设只改桌面；点“同步到引闪器”才会写入实体设备",
+      "new": "载入仅改电脑；点“写入引闪器”发送。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "设备动作（连接后才会写入引闪器）",
+      "new": "引闪器操作"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "把桌面当前全部灯位配置整体写入实体引闪器（接管控制权）",
+      "new": "发送频道、总开关和面板内灯组设置"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "⇓ 同步到引闪器",
+      "new": "⇓ 写入引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "试闪 (TEST FIRE)",
+      "new": "试闪"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "安全操作",
+      "new": "闪光开关"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "关闭所有组别的闪光输出；再次点击会恢复关闭前的状态",
+      "new": "仅关闭面板内灯组，再点可恢复"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "一键全局 OFF",
+      "new": "全组 OFF"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "恢复全局 OFF 前状态",
+      "new": "恢复设置"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "恢复第一次全局 OFF 前保存的各组模式、功率、蜂鸣与造型灯设置",
+      "new": "恢复关闭时保存的灯组设置"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "<strong>全组快速联动调光</strong>（统一提升或压暗全场已开灯组）：",
+      "new": "<strong>联动调光</strong>（调整面板内非 OFF 灯组的数值）："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "<strong>同步模型说明（实测结论）</strong>：X3 Pro 蓝牙主要是<strong>单向命令通道</strong>（与官方 App 同机制），实体端不会完整回传频道、功率等状态——桌面上显示的数值以「本机记忆」为准，连接后不会覆盖你的实体设置；你在桌面做的任何调整会立即写入实体。如需以桌面配置整体接管实体，点「⇓ 写入引闪器」。",
+      "new": "<strong>设置说明</strong>：显示电脑已保存的设置。引闪器不会完整传回机身参数。连接不会改动灯组设置。单组调整直接发送。载入预设需点“写入引闪器”。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "引闪控制台 · 兼容 X3 Pro / XPro II / X2T · 原生菜单栏应用已编译 · 支持多机共享",
+      "new": "引闪控制台 · X2 已实测可用"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "发现附近的神牛引闪器",
+      "new": "附近引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "请在各自引闪器菜单开启蓝牙（显示名称对应屏幕左下角 MAC 后 4 位）：",
+      "new": "先开启引闪器蓝牙。按屏幕地址后四位认出设备。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在准备扫描…",
+      "new": "准备扫描…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在扫描...",
+      "new": "正在扫描…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "管理控制组别",
+      "new": "灯组显示"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "⚙ 管理组别",
+      "new": "⚙ 灯组显示"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "隐藏只影响桌面面板，不会关闭实体组别；实际关闭请使用卡片内的 OFF。",
+      "new": "隐藏不会关闭闪光。停止闪光请用组内 OFF。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "保存当前布光预设",
+      "new": "保存预设"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "会保存频道、全局开关、显示格式和每个组别的当前设置；不会立即写入实体引闪器。",
+      "new": "保存频道、开关、格式和灯组设置。不改动引闪器。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "例如：棚拍人像 · 柔光两灯",
+      "new": "例如：人像双灯"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "此页面已过期，请从菜单栏重新打开控制台。",
+      "new": "页面已过期，请从菜单栏重新打开控制台。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "点击后下载并安装新版本",
+      "new": "打开更新窗口，确认后下载"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": " (已直连)",
+      "new": " (已连接)"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "`离线 (${appState.device_name})`",
+      "new": "`未连接 (${appState.device_name})`"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\"× 未连接：无法\" + actionName + \"。请先连接引闪器。\"",
+      "new": "\"× 请先连接引闪器，再\" + actionName"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\" ★ 默认\"",
+      "new": "\" ★ 常用\""
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "请先填写预设名称",
+      "new": "请输入预设名称"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "请先在“我的预设”中选择一个预设",
+      "new": "请选择一个预设"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\"✓ 已保存预设“\" + result.preset.name + \"”；当前设置会在下次启动自动恢复\"",
+      "new": "\"✓ 预设已保存：“\" + result.preset.name + \"”。下次启动恢复上次设置。\""
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\"✓ 已载入“\" + (selected ? selected.name : \"该预设\") + \"”到桌面；尚未写入实体引闪器\"",
+      "new": "\"✓ 已载入电脑：“\" + (selected ? selected.name : \"该预设\") + \"”。点“写入引闪器”发送。\""
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\"✓ 已将“\" + (selected ? selected.name : \"该预设\") + \"”设为默认预设\"",
+      "new": "\"✓ 已设为常用：“\" + (selected ? selected.name : \"该预设\") + \"”\""
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "设置默认预设失败：",
+      "new": "未能设为常用："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 已恢复默认预设到桌面；尚未写入实体引闪器",
+      "new": "✓ 常用预设已载入电脑。点“写入引闪器”发送。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "无法恢复默认预设：",
+      "new": "未能载入常用预设："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\"确定删除预设“\" + (selected ? selected.name : \"\") + \"”吗？此操作无法恢复。\"",
+      "new": "\"删除预设“\" + (selected ? selected.name : \"\") + \"”？删除后无法恢复。\""
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "全部组别 (ALL)",
+      "new": "全部灯组"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "数字值:",
+      "new": "数字:"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "分母值:",
+      "new": "分数:"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "(点击输入)",
+      "new": "(点击修改)"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "点击数值可直接键入",
+      "new": "点击数值可修改"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "(点击直接键入)",
+      "new": "(点击修改)"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "组别已休眠 / 禁用",
+      "new": "该组闪光已关闭"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "相机自动测光输出",
+      "new": "由相机自动测光"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "'输出功率'",
+      "new": "'闪光功率'"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "点击直接键盘键入功率数值",
+      "new": "点击输入功率，按回车确认"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "× 功率格式无效：请输入 1.0–10.0 或功率分数（如 1/32）",
+      "new": "× 输入 1.0–10.0 或分数，如 1/32"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "显示格式未保存",
+      "new": "功率格式未保存"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 已切换功率格式",
+      "new": "✓ 功率格式已更改"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "显示格式切换失败：",
+      "new": "功率格式未更改："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在把无线频道切换到 ${label}…",
+      "new": "正在更改频道：${label}…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "引闪器未接受频道指令",
+      "new": "频道设置未发送"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 无线频道已切换到 ${label}",
+      "new": "✓ 频道设置已发送：${label}"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "频道修改失败：",
+      "new": "频道更改未成功："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "× 频道必须是 1 到 32 的整数",
+      "new": "× 频道只能是 1 到 32 的整数"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "引闪器未接受指令",
+      "new": "设置未发送"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "`✓ ${successName}已${nextValue ? '开启' : '关闭'}`",
+      "new": "`✓ ${successName}设置已发送：${nextValue ? '开' : '关'}`"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "全组调光",
+      "new": "联动调光"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "× 当前没有已开启的组别可调光",
+      "new": "× 没有非 OFF 灯组可调节"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在调整全部开启组别…",
+      "new": "正在调整面板内灯组…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 全部开启组别已完成调光",
+      "new": "✓ 灯组设置已发送"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "× 全部调光失败：请重新连接后重试",
+      "new": "× 调光未成功，请重新连接后再试"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "全部调光失败：",
+      "new": "调光未成功："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\"✓ \" + g + \" 组写入指令已送达引闪器\"",
+      "new": "\"✓ \" + g + \" 组设置已发送\""
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "× 写入失败：请重新连接后重试",
+      "new": "× 设置未发送，请重新连接后再试"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "组别未添加",
+      "new": "灯组未显示"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "添加组别失败：",
+      "new": "灯组未显示："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "`✓ 已添加 ${g} 组`",
+      "new": "`✓ ${g} 组已显示`"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "× 至少需要保留一个组别",
+      "new": "× 至少显示一个灯组"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "\"从桌面面板隐藏 \" + g + \" 组吗？这不会关闭实体组别。\"",
+      "new": "\"隐藏 \" + g + \" 组？只隐藏面板，不关闭闪光。\""
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "组别未移除",
+      "new": "灯组未隐藏"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "移除组别失败：",
+      "new": "灯组未隐藏："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "`✓ 已从面板移除 ${g} 组`",
+      "new": "`✓ ${g} 组已隐藏`"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "当前显示组别",
+      "new": "已显示"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "可添加组别",
+      "new": "未显示"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "`添加 ${g} 组`",
+      "new": "`显示 ${g} 组`"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在扫描附近神牛引闪器...",
+      "new": "正在扫描引闪器…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在扫描附近神牛引闪器…",
+      "new": "正在扫描引闪器…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在扫描附近的神牛引闪器…",
+      "new": "正在扫描引闪器…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "未扫描到设备，请确认引闪器屏幕蓝牙已开启",
+      "new": "未找到引闪器，请先开启蓝牙再扫描。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "扫描完成：未发现神牛引闪器",
+      "new": "未找到引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 扫描完成：暂未发现神牛引闪器",
+      "new": "✓ 附近未找到引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "'当前连接' : '连接此设备'",
+      "new": "'已连接' : '连接引闪器'"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "扫描完成：发现 ${devs.length} 台神牛引闪器",
+      "new": "扫描完成：发现 ${devs.length} 台"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "扫描失败",
+      "new": "扫描未成功"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在连接所选引闪器…",
+      "new": "正在连接引闪器…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "引闪器未连接成功",
+      "new": "未连接上引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 已连接所选引闪器：",
+      "new": "✓ 已连接引闪器："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "切换引闪器失败：",
+      "new": "切换未成功："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在断开引闪器…",
+      "new": "正在断开连接…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "引闪器未断开",
+      "new": "未能断开引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 引闪器连接成功",
+      "new": "✓ 已连接引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 引闪器已断开",
+      "new": "✓ 已断开连接"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "恢复中...",
+      "new": "恢复中…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "关闭中...",
+      "new": "关闭中…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 已恢复全局 OFF 前的设置",
+      "new": "✓ 关闭前设置已发送"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 所有组别已设为 OFF；再次点击可恢复",
+      "new": "✓ 面板内灯组已设为 OFF，可恢复"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "× 操作失败：",
+      "new": "× 操作未成功："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "网络异常：",
+      "new": "连接异常："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "同步中...",
+      "new": "写入中…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 桌面配置已写入实体引闪器（A~E 按桌面设置生效）",
+      "new": "✓ 面板内灯组设置已发送"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "同步失败：",
+      "new": "设置未发送："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "未知错误",
+      "new": "原因未知"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "↩ 一键同步到引闪器",
+      "new": "⇓ 写入引闪器"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在把桌面配置写入实体引闪器，请稍候…",
+      "new": "正在向引闪器发送设置…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 同步完成：实体引闪器已接收桌面配置（A~E）",
+      "new": "✓ 面板内灯组设置已发送"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "请确认引闪器已连接后重试",
+      "new": "请连接引闪器后再试"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "同步连接异常：",
+      "new": "写入连接异常："
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "确定关闭所有组别的闪光输出吗？再次点击可恢复关闭前状态。",
+      "new": "关闭面板内灯组的闪光？再次点击可恢复。"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在恢复全局 OFF 前保存的状态…",
+      "new": "正在恢复关闭前的灯组设置…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在关闭所有组别的闪光输出，并保存恢复点…",
+      "new": "正在关闭面板内灯组的闪光…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 已恢复全局 OFF 前的各组设置",
+      "new": "✓ 关闭前设置已发送"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "✓ 全局 OFF 完成：再次点击可恢复关闭前的状态",
+      "new": "✓ 面板内灯组已设为 OFF，可恢复"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "试闪中...",
+      "new": "试闪中…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "正在向引闪器发送试闪指令，并等待设备确认…",
+      "new": "正在发送试闪指令，等待确认…"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "'✓ 引闪器已确认试闪指令（回包 ' + (j.ack || '已收到') + '）；请观察实体闪光灯是否触发'",
+      "new": "'✓ 引闪器已确认试闪。回包：' + (j.ack || '已收到') + '。请观察闪光灯是否闪光。'"
+    },
+    {
+      "file": "app/static/index.html",
+      "original": "试闪失败：",
+      "new": "未能试闪："
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "神牛引闪器桌面控制台",
+      "new": "引闪控制台"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "神牛引闪器控制台",
+      "new": "引闪控制台"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "正在启动神牛控制台…",
+      "new": "正在启动控制台…"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "正在连接本机服务",
+      "new": "请稍等"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "控制台服务启动失败",
+      "new": "控制台启动未成功"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "请在菜单栏选择“刷新控制面板”重试。",
+      "new": "在菜单栏点“刷新面板”重试。"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "在独立浏览器中打开",
+      "new": "浏览器打开"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "立即试闪 (TEST FIRE)",
+      "new": "试闪"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "刷新控制面板",
+      "new": "刷新面板"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "引闪器已确认试闪指令",
+      "new": "引闪器已确认试闪"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "试闪失败",
+      "new": "未能试闪"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "请观察实体闪光灯是否触发。",
+      "new": "请观察闪光灯是否闪光。"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "请确认控制台服务正常且引闪器已连接，再重试。",
+      "new": "连接引闪器后再试；面板异常请刷新。"
+    },
+    {
+      "file": "GodoxController.swift",
+      "original": "alert.addButton(withTitle: \"好\")",
+      "new": "alert.addButton(withTitle: \"知道了\")"
+    },
+    {
+      "file": "UpdateState.swift",
+      "original": "神牛引闪器控制台",
+      "new": "引闪控制台"
+    },
+    {
+      "file": "UpdateState.swift",
+      "original": "已是最新版本",
+      "new": "已是最新版"
+    },
+    {
+      "file": "UpdateState.swift",
+      "original": "上次检查更新未成功",
+      "new": "上次检查未成功"
+    },
+    {
+      "file": "UpdateState.swift",
+      "original": "安装可用更新 v",
+      "new": "更新到 v"
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "控制台后端已退出（状态 ",
+      "new": "控制台已停止运行（状态 "
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "后端就绪信息超过长度限制。",
+      "new": "控制台启动响应过长。"
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "后端就绪信息格式错误。",
+      "new": "控制台启动响应格式错误。"
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "后端就绪信息或实例身份无效。",
+      "new": "控制台启动响应无效。"
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "无法启动控制台后端：",
+      "new": "无法启动控制台："
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "后端启动超时，请刷新重试。",
+      "new": "启动超时，请刷新面板重试。"
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "无法连接当前控制台后端，请稍后刷新重试。",
+      "new": "无法连接控制台，请稍后刷新。"
+    },
+    {
+      "file": "BackendSupervisor.swift",
+      "original": "后端已启动，但健康检查或实例身份校验失败。",
+      "new": "控制台连接异常，请刷新面板重试。"
+    },
+    {
+      "file": "app/main.py",
+      "original": "Godox 引闪器桌面控制台",
+      "new": "引闪控制台"
+    },
+    {
+      "file": "app/main.py",
+      "original": "此页面已过期，请从控制台重新打开。",
+      "new": "页面已过期，请重新打开控制台。"
+    },
+    {
+      "file": "app/main.py",
+      "original": "不支持的外观主题",
+      "new": "请选择可用的外观"
+    },
+    {
+      "file": "app/main.py",
+      "original": "频道范围必须在 1-32 之间",
+      "new": "频道只能是 1 到 32"
+    },
+    {
+      "file": "app/main.py",
+      "original": "不支持的功率显示格式",
+      "new": "请选择可用的功率格式"
+    },
+    {
+      "file": "app/main.py",
+      "original": "未找到该预设",
+      "new": "找不到这个预设"
+    },
+    {
+      "file": "app/main.py",
+      "original": "尚未设定默认预设",
+      "new": "还没有常用预设"
+    },
+    {
+      "file": "app/main.py",
+      "original": "✓ 已恢复关闭前的全部组别设置",
+      "new": "✓ 关闭前设置已发送"
+    },
+    {
+      "file": "app/main.py",
+      "original": "✓ 已全部 OFF，已保存恢复点",
+      "new": "✓ 面板内灯组已设为 OFF，可恢复"
+    },
+    {
+      "file": "app/main.py",
+      "original": "× 操作失败",
+      "new": "× 操作未成功"
+    },
+    {
+      "file": "app/main.py",
+      "original": "<title>OFF</title>",
+      "new": "<title>闪光开关</title>"
+    },
+    {
+      "file": "app/main.py",
+      "original": "<title>Sync</title>",
+      "new": "<title>写入设置</title>"
+    },
+    {
+      "file": "app/main.py",
+      "original": "✓ 桌面配置已写入实体引闪器（A~E 按桌面设置生效）",
+      "new": "✓ 面板内灯组设置已发送"
+    },
+    {
+      "file": "app/main.py",
+      "original": "× 同步失败",
+      "new": "× 设置未发送"
+    },
+    {
+      "file": "app/main.py",
+      "original": "请配置 static/index.html",
+      "new": "缺少界面文件：static/index.html"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "预设名称不能为空",
+      "new": "请输入预设名称"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "预设名称不能超过 40 个字符",
+      "new": "预设名称最多 40 个字符"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "已有同名预设，请换一个名称",
+      "new": "名称已被使用，请换一个名称"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "正在尝试自动重连...",
+      "new": "正在重新连接…"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "已重连:",
+      "new": "已重新连接："
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "正在扫描附近的神牛引闪器...",
+      "new": "正在扫描引闪器…"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "扫描完成：发现 {len(results)} 台神牛引闪器",
+      "new": "扫描完成：发现 {len(results)} 台"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "扫描完成：未发现神牛引闪器",
+      "new": "未找到引闪器"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "未扫描到神牛引闪器设备",
+      "new": "未找到引闪器"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "正在连接 {addr}...",
+      "new": "正在连接 {addr}…"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "试闪失败：引闪器未连接",
+      "new": "未能试闪：引闪器未连接"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "引闪器未连接，请先点击“连接引闪器”",
+      "new": "请先连接引闪器，再试闪"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "试闪指令写入失败，请重新连接后重试",
+      "new": "试闪指令未发送，请重新连接后再试"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "未收到引闪器确认，请检查蓝牙距离、连接状态和实体闪光灯",
+      "new": "未收到确认，请检查距离、连接和闪光灯"
+    },
+    {
+      "file": "app/ble_manager.py",
+      "original": "已收到引闪器确认；请观察实体闪光灯是否触发",
+      "new": "引闪器已确认，请观察闪光灯是否闪光"
+    },
+    {
+      "file": "app/runtime.py",
+      "original": "已有神牛后端正在运行，请先退出对应控制台后再重试。",
+      "new": "已有控制台运行，请先退出后再试。"
+    },
+    {
+      "file": "app/runtime.py",
+      "original": "检测到旧版神牛后端正在运行，请退出旧控制台后再重试。",
+      "new": "旧版控制台仍在运行，请先退出旧版。"
+    },
+    {
+      "file": "Info.plist",
+      "original": "需要使用蓝牙直连神牛引闪器进行无线调参控制",
+      "new": "通过蓝牙连接引闪器，调整灯光"
+    }
+  ]
+}

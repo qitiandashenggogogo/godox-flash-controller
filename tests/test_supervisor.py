@@ -74,7 +74,7 @@ class SupervisorTests(unittest.TestCase):
             child = self.launch(state, script)
             failed = event(child)
             self.assertEqual(failed['event'], 'failed')
-            self.assertIn('实例身份无效', failed['detail'])
+            self.assertIn('控制台启动响应无效', failed['detail'])
             terminated = event(child)
             self.assertIn('startup-error-marker', terminated['detail'])
 

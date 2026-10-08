@@ -100,9 +100,9 @@ class VersionTagMarkupTests(unittest.TestCase):
         heading = re.search(r'<h1>(.*?)</h1>', self.page, re.S)
         self.assertIsNotNone(heading)
         body = heading.group(1)
-        self.assertIn('引闪器桌面控制台', body)
+        self.assertIn('引闪控制台', body)
         self.assertIn('<span class="version-tag">v__GODOX_APP_VERSION__</span>', body)
-        self.assertLess(body.index('引闪器桌面控制台'), body.index('class="version-tag"'),
+        self.assertLess(body.index('引闪控制台'), body.index('class="version-tag"'),
                         'version tag belongs after the title, not before it')
 
     def test_label_styling_matches_the_intended_passive_tag(self):

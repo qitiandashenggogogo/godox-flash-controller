@@ -95,11 +95,11 @@ struct UpdateState: Equatable {
         case .later(let version), .installing(let version):
             return "有可用新版 v\(version)"
         case .unchecked:
-            return "神牛引闪器控制台 v\(currentVersion)，尚未检查更新"
+            return "引闪控制台 v\(currentVersion)，尚未检查更新"
         case .upToDate:
-            return "神牛引闪器控制台，已是最新版本 v\(currentVersion)"
+            return "引闪控制台，已是最新版 v\(currentVersion)"
         case .failed:
-            return "神牛引闪器控制台 v\(currentVersion)，上次检查更新未成功"
+            return "引闪控制台 v\(currentVersion)，上次检查未成功"
         }
     }
 
@@ -118,7 +118,7 @@ struct UpdateState: Equatable {
 
     var consoleEntryAccessibleLabel: String? {
         guard let latest = latestVersion else { return nil }
-        return "安装可用更新 v\(latest)"
+        return "更新到 v\(latest)"
     }
 }
 

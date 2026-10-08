@@ -1,0 +1,2172 @@
+[
+  {
+    "id": "R001",
+    "position": "窗口主标题 / 顶栏",
+    "original": "引闪器桌面控制台",
+    "new": "引闪控制台",
+    "description": "在电脑上控制神牛引闪器",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R002",
+    "position": "更新角标/入口",
+    "original": "更新",
+    "new": "软件更新",
+    "description": "查看新版和安装选项",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R003",
+    "position": "更新入口悬停提示",
+    "original": "点击后下载并安装新版本",
+    "new": "打开更新窗口",
+    "description": "确认安装后才会下载",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R004",
+    "position": "全局初始化状态",
+    "original": "正在初始化...",
+    "new": "正在准备…",
+    "description": "请稍等",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R005",
+    "position": "主题切换（系统）",
+    "original": "跟随系统",
+    "new": "跟随系统",
+    "description": "随电脑切换深色和浅色",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R006",
+    "position": "主题切换（深色）",
+    "original": "深色",
+    "new": "深色",
+    "description": "使用深色外观",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R007",
+    "position": "主题切换（浅色）",
+    "original": "浅色",
+    "new": "浅色",
+    "description": "使用浅色外观",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R008",
+    "position": "设备切换按钮",
+    "original": "🔄 切换引闪器",
+    "new": "切换引闪器",
+    "description": "寻找附近的另一台引闪器",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R009",
+    "position": "设备主按钮（离线态）",
+    "original": "连接引闪器",
+    "new": "连接引闪器",
+    "description": "连接后才能控制灯组",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R010",
+    "position": "设备主按钮（在线态）",
+    "original": "断开连接",
+    "new": "断开连接",
+    "description": "停止与当前引闪器连接",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R011",
+    "position": "设备状态提示（未连）",
+    "original": "未连接引闪器。当前调整只保存在电脑，不会控制引闪器。",
+    "new": "未连接",
+    "description": "预设可保存到电脑；灯组操作需连接",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R012",
+    "position": "设备状态提示（已连）",
+    "original": "已连接引闪器。单组调整会立即写入；载入预设仅改桌面，点“同步”才整体写入。",
+    "new": "已连接",
+    "description": "单组调整直接发送，预设需另行应用",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R013",
+    "position": "频道区域标签",
+    "original": "无线频道 (CH)",
+    "new": "频道",
+    "description": "与闪光灯使用同一频道",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R014",
+    "position": "频道直显按钮（无障碍/提示）",
+    "original": "CH 06 (当前无线频道，点击后输入 1 到 32)",
+    "new": "更改频道",
+    "description": "点击数值，输入 1 到 32 的整数",
+    "kind": "name",
+    "status": "推荐",
+    "value": "CH {频道}；01–32"
+  },
+  {
+    "id": "R015",
+    "position": "频道下拉预设项",
+    "original": "选择…",
+    "new": "选择频道",
+    "description": "从列表中选择频道",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R016",
+    "position": "功率显示格式标签",
+    "original": "功率显示格式",
+    "new": "数值样式",
+    "description": "只改变电脑上的显示方式",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R017",
+    "position": "功率格式（双显）",
+    "original": "双显 (1/32 · 5.0)",
+    "new": "两种都显示",
+    "description": "分数和数字一起显示",
+    "kind": "name",
+    "status": "推荐",
+    "value": "1/32 · 5.0"
+  },
+  {
+    "id": "R018",
+    "position": "功率格式（分母）",
+    "original": "分母 (1/32)",
+    "new": "分数显示",
+    "description": "例如：1/32",
+    "kind": "name",
+    "status": "推荐",
+    "value": "1/32"
+  },
+  {
+    "id": "R019",
+    "position": "功率格式（数字）",
+    "original": "数字 (5.0)",
+    "new": "数字显示",
+    "description": "例如：5.0",
+    "kind": "name",
+    "status": "推荐",
+    "value": "5.0"
+  },
+  {
+    "id": "R020",
+    "position": "全局造型灯开关",
+    "original": "💡 一键全开造型灯: 关 / 开",
+    "new": "预览灯开关",
+    "description": "控制总开关，不改各组设置",
+    "kind": "name",
+    "status": "推荐",
+    "value": "开 / 关"
+  },
+  {
+    "id": "R021",
+    "position": "全局蜂鸣音开关",
+    "original": "🔔 全局蜂鸣音: 开 / 关",
+    "new": "提示音开关",
+    "description": "控制总开关，不改各组设置",
+    "kind": "name",
+    "status": "推荐",
+    "value": "开 / 关"
+  },
+  {
+    "id": "R022",
+    "position": "预设控制栏标签",
+    "original": "我的预设",
+    "new": "我的预设",
+    "description": "保存和选用灯光设置",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R023",
+    "position": "预设下拉占位符",
+    "original": "选择已保存的预设…",
+    "new": "选择预设",
+    "description": "从已保存的预设中选择",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R024",
+    "position": "预设项文本模板",
+    "original": "{名称} ★ 默认",
+    "new": "常用",
+    "description": "手动载入，不会在启动时自动载入",
+    "kind": "name",
+    "status": "推荐",
+    "value": "{预设名称} + ★ 常用"
+  },
+  {
+    "id": "R025",
+    "position": "保存预设主按钮",
+    "original": "＋ 保存当前为预设",
+    "new": "保存预设",
+    "description": "把当前设置保存到电脑",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R026",
+    "position": "载入预设主按钮",
+    "original": "载入预设",
+    "new": "载入预设",
+    "description": "只载入电脑；点“应用到设备”发送",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R027",
+    "position": "预设折叠菜单",
+    "original": "更多预设操作",
+    "new": "更多操作",
+    "description": "常用标记和删除等操作",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R028",
+    "position": "设为默认预设",
+    "original": "设为开机默认预设",
+    "new": "设为常用",
+    "description": "将所选预设标记为常用",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R029",
+    "position": "载入默认预设",
+    "original": "载入开机默认预设",
+    "new": "载入常用",
+    "description": "只载入电脑；点“应用到设备”发送",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R030",
+    "position": "删除预设按钮",
+    "original": "删除当前预设",
+    "new": "删除预设",
+    "description": "删除当前选中的预设",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R031",
+    "position": "预设操作栏下方提示",
+    "original": "载入预设只改桌面；点“同步到引闪器”才会写入实体设备",
+    "new": "载入仅改电脑",
+    "description": "点“应用到设备”才发送给引闪器",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R032",
+    "position": "动作栏分组标签",
+    "original": "设备动作（连接后才会写入引闪器）",
+    "new": "引闪器操作",
+    "description": "先连接引闪器，再执行操作",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R033",
+    "position": "整体配置同步按钮",
+    "original": "⇓ 同步到引闪器",
+    "new": "应用到设备",
+    "description": "发送频道、总开关和面板内灯组设置",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R034",
+    "position": "试闪按钮",
+    "original": "⚡ 试闪 (TEST FIRE)",
+    "new": "试闪",
+    "description": "让引闪器发送一次闪光指令",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R035",
+    "position": "试闪等待反馈状态",
+    "original": "⏳ 试闪中...",
+    "new": "试闪中…",
+    "description": "等待引闪器确认指令",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R037",
+    "position": "试闪按钮系统原生确定",
+    "original": "好",
+    "new": "知道了",
+    "description": "关闭这条提示",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R038",
+    "position": "安全操作分组标签",
+    "original": "安全操作",
+    "new": "闪光开关",
+    "description": "只控制闪光，不关闭灯的电源",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R039",
+    "position": "全局关闪按钮（初始）",
+    "original": "⏻ 一键全局 OFF",
+    "new": "关闭闪光",
+    "description": "仅关闭面板内灯组，再点可恢复",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R040",
+    "position": "全局关闪按钮（恢复）",
+    "original": "↻ 恢复全局 OFF 前状态",
+    "new": "恢复设置",
+    "description": "恢复关闭闪光前的灯组设置",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R041",
+    "position": "全局调光栏标签",
+    "original": "全组快速联动调光（统一提升或压暗全场已开灯组）：",
+    "new": "一起调节",
+    "description": "调整面板内未关闭灯组的数值",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R042",
+    "position": "联调步进按钮 (-10)",
+    "original": "⬇ -1.0 档",
+    "new": "-1.0 档",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R043",
+    "position": "联调步进按钮 (-3)",
+    "original": "⬇ -1/3 档",
+    "new": "-1/3 档",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R044",
+    "position": "联调步进按钮 (-1)",
+    "original": "⬇ -0.1 档",
+    "new": "-0.1 档",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R045",
+    "position": "联调步进按钮 (+1)",
+    "original": "⬆ +0.1 档",
+    "new": "+0.1 档",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R046",
+    "position": "联调步进按钮 (+3)",
+    "original": "⬆ +1/3 档",
+    "new": "+1/3 档",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R047",
+    "position": "联调步进按钮 (+10)",
+    "original": "⬆ +1.0 档",
+    "new": "+1.0 档",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R048",
+    "position": "底栏核心说明",
+    "original": "同步模型说明（实测结论）：桌面上显示的数值以「本机记忆」为准",
+    "new": "设置说明",
+    "description": "显示电脑已保存的设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R049",
+    "position": "底栏页脚信息",
+    "original": "神牛引闪器桌面控制台 · 兼容 X3 Pro / XPro II / X2T · 原生菜单栏应用已编译 · 支持多机共享",
+    "new": "引闪控制台",
+    "description": "X2 已实测可用",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "X2（用户已实测可用）"
+  },
+  {
+    "id": "R050",
+    "position": "组别标签栏全选按钮",
+    "original": "全部组别 (ALL)",
+    "new": "全部灯组",
+    "description": "取消单个灯组的定位高亮",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R051",
+    "position": "单组标签切换项",
+    "original": "${g} 组",
+    "new": "灯组",
+    "description": "组号与实际设备保持一致",
+    "kind": "name",
+    "status": "推荐",
+    "value": "{组号} 组"
+  },
+  {
+    "id": "R052",
+    "position": "组别管理入口按钮",
+    "original": "⚙ 管理组别",
+    "new": "灯组显示",
+    "description": "选择面板中显示哪些灯组",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R053",
+    "position": "灯组卡片标题",
+    "original": "${g} 组",
+    "new": "灯组",
+    "description": "组号与实际设备保持一致",
+    "kind": "name",
+    "status": "推荐",
+    "value": "{组号} 组"
+  },
+  {
+    "id": "R054",
+    "position": "组模式/功率标题（M）",
+    "original": "输出功率",
+    "new": "闪光强度",
+    "description": "手动调整闪光输出的强弱",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R055",
+    "position": "组模式/功率标题（TTL）",
+    "original": "TTL 模式",
+    "new": "自动模式",
+    "description": "由相机决定闪光强度",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R056",
+    "position": "功率数值输入弹窗提示",
+    "original": "按回车确认",
+    "new": "按回车确认",
+    "description": "输入后按回车即可发送",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R057",
+    "position": "功率数值辅助提示（双显）",
+    "original": "数字值: ${grp.decimal_power}",
+    "new": "数字",
+    "description": "",
+    "kind": "name",
+    "status": "推荐",
+    "value": "{数字值}"
+  },
+  {
+    "id": "R058",
+    "position": "功率数值辅助提示（分母）",
+    "original": "分母值: ${grp.power} (点击输入)",
+    "new": "分数",
+    "description": "点击数值可修改",
+    "kind": "name",
+    "status": "推荐",
+    "value": "{分数值}"
+  },
+  {
+    "id": "R059",
+    "position": "功率数值辅助提示（数字）",
+    "original": "数字: ${grp.decimal_power} (点击直接键入)",
+    "new": "数字",
+    "description": "点击数值可修改",
+    "kind": "name",
+    "status": "推荐",
+    "value": "{数字值}"
+  },
+  {
+    "id": "R060",
+    "position": "功率辅助提示（通用点按）",
+    "original": "点击数值可直接键入",
+    "new": "点击修改",
+    "description": "直接输入闪光强度数值",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R061",
+    "position": "组状态辅助提示（OFF）",
+    "original": "组别已休眠 / 禁用",
+    "new": "闪光已关闭",
+    "description": "只关闭该组闪光，设备仍开机",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R062",
+    "position": "组状态辅助提示（TTL）",
+    "original": "相机自动测光输出",
+    "new": "相机自动调节",
+    "description": "亮度由相机决定",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R063",
+    "position": "组步进微调按钮",
+    "original": "-1.0 / -0.1 / +0.1 / +1.0",
+    "new": "保持原数值",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "-1.0 / -0.1 / +0.1 / +1.0"
+  },
+  {
+    "id": "R064",
+    "position": "组步进微调按钮 (分数)",
+    "original": "-1.0 档 / -1/3 档 / +1/3 档 / +1.0 档",
+    "new": "保持原数值",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "-1.0 档 / -1/3 档 / +1/3 档 / +1.0 档"
+  },
+  {
+    "id": "R065",
+    "position": "组内造型灯按钮",
+    "original": "💡 造型灯: 开启 / 关闭",
+    "new": "预览灯",
+    "description": "常亮，方便查看光线",
+    "kind": "name",
+    "status": "推荐",
+    "value": "开 / 关"
+  },
+  {
+    "id": "R066",
+    "position": "组内回电音按钮",
+    "original": "🔔 回电音: 开启 / 关闭",
+    "new": "提示音",
+    "description": "灯组回电完成时提示",
+    "kind": "name",
+    "status": "推荐",
+    "value": "开 / 关"
+  },
+  {
+    "id": "R067",
+    "position": "设备扫描弹窗标题",
+    "original": "发现附近的神牛引闪器",
+    "new": "附近引闪器",
+    "description": "先开启引闪器的蓝牙",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R068",
+    "position": "扫描操作指引",
+    "original": "请在各自引闪器菜单开启蓝牙（显示名称对应屏幕左下角 MAC 后 4 位）：",
+    "new": "先开启引闪器蓝牙",
+    "description": "按屏幕地址后四位认出设备",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R069",
+    "position": "扫描中状态提示",
+    "original": "正在扫描... / 正在准备扫描…",
+    "new": "正在寻找…",
+    "description": "寻找附近可连接的引闪器",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R070",
+    "position": "扫描空状态提示",
+    "original": "未扫描到设备，请确认引闪器屏幕蓝牙已开启",
+    "new": "未找到引闪器",
+    "description": "先开启蓝牙，再点“重新查找”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R071",
+    "position": "重新扫描按钮",
+    "original": "重新扫描 / 扫描中…",
+    "new": "重新查找",
+    "description": "再次寻找附近的引闪器",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R072",
+    "position": "扫描弹窗关闭按钮",
+    "original": "关闭",
+    "new": "关闭",
+    "description": "关闭此窗口",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R073",
+    "position": "设备列表连接项（当前）",
+    "original": "当前连接",
+    "new": "已连接",
+    "description": "当前连接的引闪器",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R074",
+    "position": "设备列表连接项（去连）",
+    "original": "连接此设备",
+    "new": "连接引闪器",
+    "description": "会先断开上一台引闪器",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R075",
+    "position": "组别管理弹窗标题",
+    "original": "管理控制组别",
+    "new": "灯组显示",
+    "description": "选择面板中显示哪些灯组",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R076",
+    "position": "组别管理解释提示",
+    "original": "隐藏只影响桌面面板，不会关闭实体组别；实际关闭请使用卡片内的 OFF。",
+    "new": "隐藏不会关闭闪光",
+    "description": "停止闪光请点灯组内的“关闭”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R077",
+    "position": "组别管理已显示标题",
+    "original": "当前显示组别",
+    "new": "已显示",
+    "description": "这些灯组已在面板上",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R078",
+    "position": "组别管理未显示标题",
+    "original": "可添加组别",
+    "new": "未显示",
+    "description": "可以把这些灯组显示在面板上",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R079",
+    "position": "隐藏组别按钮",
+    "original": "隐藏 ${g} 组",
+    "new": "隐藏此组",
+    "description": "只在面板隐藏，不关闭闪光",
+    "kind": "name",
+    "status": "推荐",
+    "value": "隐藏 {组号} 组"
+  },
+  {
+    "id": "R080",
+    "position": "添加组别按钮",
+    "original": "添加 ${g} 组",
+    "new": "显示此组",
+    "description": "把这组的控制卡片显示在面板上",
+    "kind": "name",
+    "status": "推荐",
+    "value": "显示 {组号} 组"
+  },
+  {
+    "id": "R081",
+    "position": "组别管理完成按钮",
+    "original": "完成",
+    "new": "完成",
+    "description": "关闭窗口，保留已做的调整",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R082",
+    "position": "保存预设弹窗标题",
+    "original": "保存当前布光预设",
+    "new": "保存预设",
+    "description": "保存当前设置，方便下次使用",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R083",
+    "position": "保存预设说明提示",
+    "original": "会保存频道、全局开关、显示格式和每个组别的当前设置；不会立即写入实体引闪器。",
+    "new": "保存到电脑",
+    "description": "包含频道、开关、样式和灯组设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R084",
+    "position": "预设名称输入标签",
+    "original": "预设名称",
+    "new": "预设名称",
+    "description": "最多 40 个字符",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R085",
+    "position": "预设名称输入占位符",
+    "original": "例如：棚拍人像 · 柔光两灯",
+    "new": "例如：人像双灯",
+    "description": "使用方便自己辨认的名称",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R086",
+    "position": "保存预设取消按钮",
+    "original": "取消",
+    "new": "取消",
+    "description": "不保存，关闭窗口",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R087",
+    "position": "保存预设确定按钮",
+    "original": "保存预设",
+    "new": "保存预设",
+    "description": "保存名称和当前设置",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R088",
+    "position": "菜单栏图标工具提示",
+    "original": "⚡ 神牛引闪器",
+    "new": "神牛引闪器",
+    "description": "点击打开控制台",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R089",
+    "position": "菜单栏菜单项：标题",
+    "original": "神牛引闪器控制台",
+    "new": "引闪控制台",
+    "description": "当前软件版本另行显示",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R090",
+    "position": "菜单栏菜单项：浏览器",
+    "original": "在独立浏览器中打开",
+    "new": "浏览器打开",
+    "description": "在默认浏览器中打开控制台",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R091",
+    "position": "菜单栏菜单项：试闪",
+    "original": "⚡ 立即试闪 (TEST FIRE)",
+    "new": "试闪",
+    "description": "让引闪器发送一次闪光指令",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R092",
+    "position": "菜单栏菜单项：刷新",
+    "original": "刷新控制面板",
+    "new": "刷新面板",
+    "description": "重新加载控制台页面",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R093",
+    "position": "菜单栏菜单项：更新检查",
+    "original": "检查更新…",
+    "new": "检查更新",
+    "description": "看看是否有新版本",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R094",
+    "position": "菜单栏菜单项：有新版",
+    "original": "发现新版 v{version} / 有可用新版 v{version}",
+    "new": "发现新版",
+    "description": "",
+    "kind": "name",
+    "status": "推荐",
+    "value": "v{新版版本号}"
+  },
+  {
+    "id": "R095",
+    "position": "菜单栏菜单项：去更新",
+    "original": "更新到 v{latest}… / 更新到 v{latest}",
+    "new": "软件更新",
+    "description": "打开更新窗口，确认后安装",
+    "kind": "name",
+    "status": "推荐",
+    "value": "v{新版版本号}"
+  },
+  {
+    "id": "R096",
+    "position": "菜单栏菜单项：安装更新",
+    "original": "安装可用更新 v{latest}",
+    "new": "软件更新",
+    "description": "打开更新窗口，确认后安装",
+    "kind": "name",
+    "status": "推荐",
+    "value": "v{新版版本号}"
+  },
+  {
+    "id": "R097",
+    "position": "菜单栏菜单项：最新版",
+    "original": "神牛引闪器控制台，已是最新版本 v{currentVersion}",
+    "new": "已是最新版",
+    "description": "",
+    "kind": "name",
+    "status": "推荐",
+    "value": "v{当前版本号}"
+  },
+  {
+    "id": "R098",
+    "position": "菜单栏菜单项：未检查",
+    "original": "神牛引闪器控制台 v{currentVersion}，尚未检查更新",
+    "new": "尚未检查",
+    "description": "",
+    "kind": "name",
+    "status": "推荐",
+    "value": "v{当前版本号}"
+  },
+  {
+    "id": "R099",
+    "position": "菜单栏菜单项：更新失败",
+    "original": "神牛引闪器控制台 v{currentVersion}，上次检查更新未成功",
+    "new": "检查未成功",
+    "description": "可从菜单栏再次检查更新",
+    "kind": "name",
+    "status": "推荐",
+    "value": "v{当前版本号}"
+  },
+  {
+    "id": "R100",
+    "position": "菜单栏菜单项：退出",
+    "original": "退出控制台",
+    "new": "退出控制台",
+    "description": "关闭软件并断开引闪器",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R101",
+    "position": "启动原生加载屏",
+    "original": "正在启动神牛控制台… / 正在连接本机服务",
+    "new": "正在启动…",
+    "description": "请稍等",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R102",
+    "position": "启动原生崩溃主标题",
+    "original": "控制台服务启动失败",
+    "new": "启动未成功",
+    "description": "从菜单栏点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R103",
+    "position": "启动异常提示模板",
+    "original": "无法启动控制台后端：{错误}",
+    "new": "无法启动",
+    "description": "点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R104",
+    "position": "启动超时提示",
+    "original": "后端启动超时，请刷新重试。",
+    "new": "启动超时",
+    "description": "从菜单栏点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R105",
+    "position": "实例健康失败提示",
+    "original": "后端已启动，但健康检查或实例身份校验失败。",
+    "new": "控制台连接异常",
+    "description": "从菜单栏点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R106",
+    "position": "后端互斥退出提示",
+    "original": "已有神牛后端正在运行，请先退出对应控制台后再重试。",
+    "new": "已有控制台运行",
+    "description": "先退出已运行的控制台，再打开",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R107",
+    "position": "连接前置拦截",
+    "original": "× 未连接：无法{动作}。请先连接引闪器。",
+    "new": "请先连接引闪器",
+    "description": "连接后再操作",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R109",
+    "position": "预设名称空拦截",
+    "original": "请先填写预设名称",
+    "new": "请输入预设名称",
+    "description": "填写名称后再保存",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R110",
+    "position": "预设名称超长",
+    "original": "预设名称不能超过 40 个字符",
+    "new": "名称太长",
+    "description": "最多 40 个字符",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "40"
+  },
+  {
+    "id": "R111",
+    "position": "预设名称重复",
+    "original": "已有同名预设，请换一个名称",
+    "new": "名称已被使用",
+    "description": "换个名称再保存",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R112",
+    "position": "预设保存成功",
+    "original": "✓ 已保存预设“{名称}”；当前设置会在下次启动自动恢复",
+    "new": "预设已保存",
+    "description": "下次启动会恢复上次设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{预设名}"
+  },
+  {
+    "id": "R113",
+    "position": "预设保存失败",
+    "original": "× 保存预设失败：{错误}",
+    "new": "保存未成功",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R114",
+    "position": "未选中预设直接载入",
+    "original": "请先在“我的预设”中选择一个预设",
+    "new": "请选择一个预设",
+    "description": "在“我的预设”中选择",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R115",
+    "position": "预设载入成功",
+    "original": "✓ 已载入“{名称}”到桌面；尚未写入实体引闪器",
+    "new": "预设已载入电脑",
+    "description": "点“应用到设备”才发送给引闪器",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{预设名}"
+  },
+  {
+    "id": "R116",
+    "position": "预设载入失败",
+    "original": "× 载入预设失败：{错误}",
+    "new": "载入未成功",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R117",
+    "position": "设为默认预设成功",
+    "original": "✓ 已将“{名称}”设为默认预设",
+    "new": "已设为常用",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{预设名}"
+  },
+  {
+    "id": "R118",
+    "position": "设为默认预设失败",
+    "original": "× 设置默认预设失败：{错误}",
+    "new": "未能设为常用",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R119",
+    "position": "恢复默认预设成功",
+    "original": "✓ 已恢复默认预设到桌面；尚未写入实体引闪器",
+    "new": "常用预设已载入电脑",
+    "description": "点“应用到设备”才发送给引闪器",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{预设名}"
+  },
+  {
+    "id": "R120",
+    "position": "恢复默认预设失败",
+    "original": "× 无法恢复默认预设：{错误}",
+    "new": "未能载入常用预设",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R121",
+    "position": "删除预设确认弹窗",
+    "original": "确定删除预设“{名称}”吗？此操作无法恢复。",
+    "new": "删除这个预设？",
+    "description": "删除后无法恢复",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{预设名}"
+  },
+  {
+    "id": "R122",
+    "position": "删除预设成功",
+    "original": "✓ 已删除预设",
+    "new": "预设已删除",
+    "description": "所选预设已从电脑删除",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R123",
+    "position": "删除预设失败",
+    "original": "× 删除预设失败：{错误}",
+    "new": "删除未成功",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R124",
+    "position": "功率格式错误",
+    "original": "× 功率格式无效：请输入 1.0–10.0 或功率分数（如 1/32）",
+    "new": "请输入有效数值",
+    "description": "输入 1.0–10.0 或 1/32",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "1.0–10.0；1/32"
+  },
+  {
+    "id": "R125",
+    "position": "格式切换成功",
+    "original": "✓ 已切换功率显示格式",
+    "new": "显示样式已更改",
+    "description": "只更改电脑显示，不改变灯光",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R126",
+    "position": "频道数值越界",
+    "original": "× 频道必须是 1 到 32 的整数",
+    "new": "频道只能是 1 到 32",
+    "description": "请输入整数",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R127",
+    "position": "正在切换频道",
+    "original": "正在把无线频道切换到 {频道}…",
+    "new": "正在更改频道…",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{频道}"
+  },
+  {
+    "id": "R128",
+    "position": "频道切换成功",
+    "original": "✓ 无线频道已切换到 {频道}",
+    "new": "频道设置已发送",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{频道}"
+  },
+  {
+    "id": "R129",
+    "position": "频道切换失败",
+    "original": "× 频道修改失败：{错误}",
+    "new": "频道更改未成功",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R130",
+    "position": "全局开关中",
+    "original": "正在{动作}…",
+    "new": "正在更改开关…",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R131",
+    "position": "全局开关成功",
+    "original": "✓ {项目}已{开启/关闭}",
+    "new": "开关设置已发送",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{开关名称} + 开 / 关"
+  },
+  {
+    "id": "R132",
+    "position": "全局开关失败",
+    "original": "× {动作}失败：{错误}",
+    "new": "开关更改未成功",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R133",
+    "position": "全组调光空拦截",
+    "original": "× 当前没有已开启的组别可调光",
+    "new": "没有已开启的灯组",
+    "description": "先开启一个灯组，再一起调光",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R134",
+    "position": "正在全组调光",
+    "original": "正在调整全部开启组别…",
+    "new": "正在调整灯组…",
+    "description": "只调整面板内未关闭的灯组",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R135",
+    "position": "全组调光成功",
+    "original": "✓ 全部开启组别已完成调光",
+    "new": "灯组设置已发送",
+    "description": "只处理面板内未关闭的灯组",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R136",
+    "position": "全组调光失败",
+    "original": "× 全部调光失败：{错误}",
+    "new": "调光未成功",
+    "description": "重新连接引闪器后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R137",
+    "position": "单组写入反馈",
+    "original": "✓ {组号} 组写入指令已送达引闪器",
+    "new": "灯组设置已发送",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{组号}"
+  },
+  {
+    "id": "R138",
+    "position": "单组写入失败",
+    "original": "× 写入失败：请重新连接后重试",
+    "new": "设置未发送",
+    "description": "重新连接引闪器后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R139",
+    "position": "组别隐藏保底拦截",
+    "original": "× 至少需要保留一个组别",
+    "new": "至少显示一个灯组",
+    "description": "不能隐藏最后一个灯组",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R140",
+    "position": "隐藏组别二次确认",
+    "original": "从桌面面板隐藏 {组号} 组吗？这不会关闭实体组别。",
+    "new": "隐藏这个灯组？",
+    "description": "只隐藏面板，不关闭该组闪光",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{组号}"
+  },
+  {
+    "id": "R141",
+    "position": "添加组别成功",
+    "original": "✓ 已添加 {组号} 组",
+    "new": "灯组已显示",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{组号}"
+  },
+  {
+    "id": "R142",
+    "position": "隐藏组别成功",
+    "original": "✓ 已从面板移除 {组号} 组",
+    "new": "灯组已隐藏",
+    "description": "不关闭该组的闪光",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{组号}"
+  },
+  {
+    "id": "R143",
+    "position": "扫描结果：未发现",
+    "original": "扫描完成：未发现神牛引闪器",
+    "new": "未找到引闪器",
+    "description": "先开启蓝牙，再点“重新查找”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R144",
+    "position": "扫描结果：已发现",
+    "original": "扫描完成：发现 {数量} 台神牛引闪器",
+    "new": "查找完成",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{数量} 台"
+  },
+  {
+    "id": "R145",
+    "position": "正在连接中",
+    "original": "正在连接所选引闪器… / 正在连接 {地址}…",
+    "new": "正在连接…",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{设备名或地址}"
+  },
+  {
+    "id": "R146",
+    "position": "设备连接成功",
+    "original": "✓ 已连接所选引闪器：{名称}",
+    "new": "已连接引闪器",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{设备名}"
+  },
+  {
+    "id": "R147",
+    "position": "设备连接失败",
+    "original": "× 连接失败：{错误}",
+    "new": "连接未成功",
+    "description": "再检查蓝牙",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "R148",
+    "position": "设备已断开",
+    "original": "✓ 引闪器已断开 / 已手动断开",
+    "new": "已断开连接",
+    "description": "先连接引闪器才能继续控制",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R149",
+    "position": "全局关闪确认",
+    "original": "确定关闭所有组别的闪光输出吗？再次点击可恢复关闭前状态。",
+    "new": "关闭这些灯组的闪光？",
+    "description": "只关闭面板内灯组，再点可恢复",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R150",
+    "position": "全局关闪处理中",
+    "original": "⏳ 关闭中... / 正在关闭所有组别的闪光输出…",
+    "new": "正在关闭闪光…",
+    "description": "保留当前设置，以便恢复",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R151",
+    "position": "全局关闪成功",
+    "original": "✓ 所有组别已设为 OFF；再次点击可恢复",
+    "new": "关闭设置已发送",
+    "description": "仅关闭面板内灯组，点“恢复设置”恢复",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R152",
+    "position": "恢复关闪处理中",
+    "original": "⏳ 恢复中... / 正在恢复全局 OFF 前保存的状态…",
+    "new": "正在恢复设置…",
+    "description": "恢复关闭闪光前的灯组设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R153",
+    "position": "恢复关闪成功",
+    "original": "✓ 已恢复全局 OFF 前的设置",
+    "new": "关闭前设置已发送",
+    "description": "恢复关闭时保存的灯组设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R154",
+    "position": "整体同步处理中",
+    "original": "⏳ 同步中... / 正在把桌面配置写入实体引闪器…",
+    "new": "正在发送设置…",
+    "description": "发送面板内灯组和总开关设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R155",
+    "position": "整体同步成功",
+    "original": "✓ 桌面配置已写入实体引闪器（A~E 按桌面设置生效）",
+    "new": "设置已发送",
+    "description": "当前面板设置已发给引闪器",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R156",
+    "position": "整体同步失败",
+    "original": "× 同步失败：请确认引闪器已连接后重试",
+    "new": "设置未发送",
+    "description": "连接引闪器后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R157",
+    "position": "试闪指令设备确认",
+    "original": "✓ 引闪器已确认试闪指令（回包 {ACK}）；请观察实体闪光灯是否触发",
+    "new": "引闪器已确认指令",
+    "description": "请观察闪光灯是否闪光",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{设备回包}"
+  },
+  {
+    "id": "R158",
+    "position": "试闪未收到设备确认",
+    "original": "× 试闪未收到引闪器确认 / 未收到引闪器确认",
+    "new": "未收到引闪器确认",
+    "description": "检查蓝牙连接后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "R159",
+    "position": "页面凭证过期拦截",
+    "original": "此页面已过期，请从菜单栏重新打开控制台。",
+    "new": "页面已过期",
+    "description": "请从菜单栏重新打开控制台",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X001",
+    "position": "灯组模式",
+    "original": "M",
+    "new": "手动",
+    "description": "自己调整闪光强度",
+    "kind": "name",
+    "status": "推荐",
+    "value": "M"
+  },
+  {
+    "id": "X002",
+    "position": "灯组模式",
+    "original": "TTL",
+    "new": "自动",
+    "description": "由相机决定闪光强度",
+    "kind": "name",
+    "status": "推荐",
+    "value": "TTL"
+  },
+  {
+    "id": "X003",
+    "position": "灯组模式",
+    "original": "OFF",
+    "new": "关闭",
+    "description": "只停止该组闪光",
+    "kind": "name",
+    "status": "推荐",
+    "value": "OFF"
+  },
+  {
+    "id": "X004",
+    "position": "连接状态",
+    "original": "{设备名} (已直连)",
+    "new": "已连接",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原动态值}"
+  },
+  {
+    "id": "X005",
+    "position": "离线状态",
+    "original": "离线 ({设备名})",
+    "new": "未连接",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原动态值}"
+  },
+  {
+    "id": "X006",
+    "position": "未选设备",
+    "original": "未选择引闪器",
+    "new": "未选引闪器",
+    "description": "请选择要连接的引闪器",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X007",
+    "position": "频道输入",
+    "original": "点击后直接输入 1-32 修改频道",
+    "new": "点击修改频道",
+    "description": "请输入 1 到 32 的整数",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X008",
+    "position": "频道输入无障碍名",
+    "original": "输入无线频道 1 到 32",
+    "new": "输入频道",
+    "description": "请输入 1 到 32 的整数",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X009",
+    "position": "频道列表无障碍名",
+    "original": "选择无线频道",
+    "new": "选择频道",
+    "description": "从列表中选择频道",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X010",
+    "position": "亮度输入悬停提示",
+    "original": "点击直接键盘键入功率数值",
+    "new": "点击修改强度",
+    "description": "输入后按回车确认",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X011",
+    "position": "设置说明",
+    "original": "实体端不会完整回传频道、功率等状态",
+    "new": "设备设置不会完整传回电脑",
+    "description": "电脑显示的是已保存设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X012",
+    "position": "设置说明",
+    "original": "连接后不会覆盖你的实体设置",
+    "new": "连接不会更改灯组设置",
+    "description": "应用或调整后才发送设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X013",
+    "position": "设置说明",
+    "original": "你在桌面做的任何调整会立即写入实体",
+    "new": "单组调整会直接发送",
+    "description": "载入预设需另点“应用到设备”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X014",
+    "position": "设置说明",
+    "original": "如需以桌面配置整体接管实体，点「⇓ 同步到引闪器」",
+    "new": "使用这套设置？",
+    "description": "点“应用到设备”发送当前设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X015",
+    "position": "预设保存说明",
+    "original": "不会立即写入实体引闪器",
+    "new": "保存不会更改引闪器",
+    "description": "需要时再点“应用到设备”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X016",
+    "position": "预设名称校验",
+    "original": "预设名称不能为空",
+    "new": "请输入预设名称",
+    "description": "填写名称后再保存",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X017",
+    "position": "预设查找",
+    "original": "未找到该预设",
+    "new": "找不到这个预设",
+    "description": "重新选择一个预设",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X018",
+    "position": "默认预设查找",
+    "original": "尚未设定默认预设",
+    "new": "还没有常用预设",
+    "description": "先选择预设，再点“设为常用”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X019",
+    "position": "删除确认按钮",
+    "original": "确定 / 取消",
+    "new": "确定 / 取消",
+    "description": "",
+    "kind": "value",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X020",
+    "position": "弹窗图标关闭",
+    "original": "✕",
+    "new": "关闭",
+    "description": "关闭当前窗口",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X021",
+    "position": "显示样式反馈",
+    "original": "显示格式未保存",
+    "new": "显示样式未保存",
+    "description": "稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X022",
+    "position": "显示样式反馈",
+    "original": "× 显示格式切换失败：{错误}",
+    "new": "显示样式未更改",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X023",
+    "position": "外观错误",
+    "original": "不支持的外观主题",
+    "new": "请选择可用的外观",
+    "description": "跟随系统、深色或浅色",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X024",
+    "position": "样式错误",
+    "original": "不支持的功率显示格式",
+    "new": "请选择可用的数值样式",
+    "description": "两种都显示、分数或数字",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X025",
+    "position": "频道反馈",
+    "original": "引闪器未接受频道指令",
+    "new": "频道设置未发送",
+    "description": "检查连接后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X026",
+    "position": "设备反馈",
+    "original": "引闪器未接受指令",
+    "new": "设置未发送",
+    "description": "检查连接后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X027",
+    "position": "灯组发送过程",
+    "original": "正在写入 {组号} 组…",
+    "new": "正在发送灯组设置…",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{组号}"
+  },
+  {
+    "id": "X028",
+    "position": "灯组显示反馈",
+    "original": "组别未添加 / × 添加组别失败：{错误}",
+    "new": "灯组未显示",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X029",
+    "position": "灯组隐藏反馈",
+    "original": "组别未移除 / × 移除组别失败：{错误}",
+    "new": "灯组未隐藏",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X030",
+    "position": "寻找设备状态",
+    "original": "扫描中…",
+    "new": "查找中…",
+    "description": "寻找附近可连接的引闪器",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X031",
+    "position": "寻找设备过程",
+    "original": "正在扫描附近的神牛引闪器…",
+    "new": "正在寻找引闪器…",
+    "description": "请先开启引闪器蓝牙",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X032",
+    "position": "寻找设备失败",
+    "original": "扫描失败 / 扫描失败：{错误}",
+    "new": "未能找到引闪器",
+    "description": "再检查蓝牙",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X033",
+    "position": "寻找设备为空",
+    "original": "✓ 扫描完成：暂未发现神牛引闪器",
+    "new": "附近没有找到引闪器",
+    "description": "开启蓝牙后点“重新查找”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X034",
+    "position": "切换失败",
+    "original": "× 切换引闪器失败：{错误}",
+    "new": "切换未成功",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X035",
+    "position": "设备连接失败",
+    "original": "引闪器未连接成功",
+    "new": "未连接上引闪器",
+    "description": "检查蓝牙后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X036",
+    "position": "断开过程",
+    "original": "正在断开引闪器…",
+    "new": "正在断开连接…",
+    "description": "稍等，连接即将断开",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X037",
+    "position": "断开失败",
+    "original": "引闪器未断开 / × 断开失败：{错误}",
+    "new": "未能断开连接",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X038",
+    "position": "恢复按钮等待",
+    "original": "⏳ 恢复中...",
+    "new": "恢复中…",
+    "description": "恢复关闭闪光前的灯组设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X039",
+    "position": "关闪按钮等待",
+    "original": "⏳ 关闭中...",
+    "new": "关闭中…",
+    "description": "关闭面板内灯组的闪光",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X040",
+    "position": "应用按钮等待",
+    "original": "⏳ 同步中...",
+    "new": "发送中…",
+    "description": "发送当前面板设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X041",
+    "position": "通用操作失败",
+    "original": "操作失败 / × 操作失败：{错误}",
+    "new": "操作未成功",
+    "description": "请稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X042",
+    "position": "通用连接错误",
+    "original": "网络异常：{错误} / 同步网络异常：{错误}",
+    "new": "连接异常",
+    "description": "稍后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X043",
+    "position": "试闪失败",
+    "original": "× 试闪失败：{错误} / 试闪失败",
+    "new": "未能试闪",
+    "description": "检查连接后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X044",
+    "position": "试闪过程",
+    "original": "正在向引闪器发送试闪指令，并等待设备确认…",
+    "new": "正在发送试闪指令…",
+    "description": "等待引闪器确认",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X045",
+    "position": "试闪未发送",
+    "original": "试闪指令写入失败，请重新连接后重试",
+    "new": "试闪指令未发送",
+    "description": "重新连接引闪器后再试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X046",
+    "position": "试闪无确认",
+    "original": "未收到引闪器确认，请检查蓝牙距离、连接状态和实体闪光灯",
+    "new": "未收到引闪器确认",
+    "description": "靠近引闪器，检查连接和闪光灯",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X047",
+    "position": "原生试闪成功说明",
+    "original": "请观察实体闪光灯是否触发。",
+    "new": "请观察闪光灯是否闪光",
+    "description": "收到确认不等于灯已实际闪光",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X048",
+    "position": "原生试闪失败说明",
+    "original": "请确认控制台服务正常且引闪器已连接，再重试。",
+    "new": "连接引闪器后再试",
+    "description": "若面板异常，先点“刷新面板”",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X049",
+    "position": "原生启动错误提示",
+    "original": "请在菜单栏选择“刷新控制面板”重试。",
+    "new": "在菜单栏点“刷新面板”重试",
+    "description": "按原路径重新尝试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X050",
+    "position": "软件退出故障",
+    "original": "控制台后端已退出（状态 {状态}）。",
+    "new": "控制台已停止运行",
+    "description": "点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{退出状态} + {原错误详情}"
+  },
+  {
+    "id": "X051",
+    "position": "启动响应过长",
+    "original": "后端就绪信息超过长度限制。",
+    "new": "控制台启动异常",
+    "description": "点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X052",
+    "position": "启动响应无效",
+    "original": "后端就绪信息格式错误。 / 后端就绪信息或实例身份无效。",
+    "new": "控制台启动异常",
+    "description": "点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": "{原错误详情}"
+  },
+  {
+    "id": "X053",
+    "position": "无法连接服务",
+    "original": "无法连接当前控制台后端，请稍后刷新重试。",
+    "new": "无法连接控制台",
+    "description": "稍后点“刷新面板”重试",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X054",
+    "position": "旧版运行冲突",
+    "original": "检测到旧版神牛后端正在运行，请退出旧控制台后再重试。",
+    "new": "旧版控制台仍在运行",
+    "description": "先退出旧版，再打开此版本",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X055",
+    "position": "版本未知",
+    "original": "未知版本",
+    "new": "版本未知",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X056",
+    "position": "蓝牙权限说明",
+    "original": "需要使用蓝牙直连神牛引闪器进行无线调参控制",
+    "new": "通过蓝牙连接引闪器，调整灯光",
+    "description": "",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X057",
+    "position": "回退结果页标题",
+    "original": "OFF / Sync",
+    "new": "闪光开关 / 应用设置",
+    "description": "",
+    "kind": "value",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X058",
+    "position": "回退结果页返回链接",
+    "original": "← 返回",
+    "new": "返回",
+    "description": "回到控制台",
+    "kind": "name",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X059",
+    "position": "回退关闪结果",
+    "original": "✓ 已全部 OFF，已保存恢复点",
+    "new": "关闭设置已发送",
+    "description": "点“恢复设置”可恢复",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  },
+  {
+    "id": "X060",
+    "position": "回退恢复结果",
+    "original": "✓ 已恢复关闭前的全部组别设置",
+    "new": "关闭前设置已发送",
+    "description": "恢复关闭时保存的灯组设置",
+    "kind": "copy",
+    "status": "推荐",
+    "value": ""
+  }
+]

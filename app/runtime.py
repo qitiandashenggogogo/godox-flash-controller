@@ -21,7 +21,7 @@ def acquire_backend_lock():
         fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         handle.close()
-        raise RuntimeError("已有神牛后端正在运行，请先退出对应控制台后再重试。") from None
+        raise RuntimeError("已有控制台运行，请先退出后再试。") from None
     # Old releases did not participate in this lock. Never silently adopt them.
     if not os.environ.get("GODOX_CONTROLLER_STATE_DIR"):
         import urllib.request
@@ -33,7 +33,7 @@ def acquire_backend_lock():
             legacy = None
         if isinstance(legacy, dict) and legacy.get("app") == "godox-controller":
             handle.close()
-            raise RuntimeError("检测到旧版神牛后端正在运行，请退出旧控制台后再重试。")
+            raise RuntimeError("旧版控制台仍在运行，请先退出旧版。")
     handle.seek(0)
     handle.truncate()
     json.dump({"pid": os.getpid(), "instance_id": INSTANCE_ID}, handle)

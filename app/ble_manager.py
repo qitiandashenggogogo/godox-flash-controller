@@ -246,11 +246,11 @@ class BleManager:
     def create_preset(self, name: str) -> Dict[str, Any]:
         clean_name = name.strip()
         if not clean_name:
-            raise ValueError("预设名称不能为空")
+            raise ValueError("请输入预设名称")
         if len(clean_name) > 40:
-            raise ValueError("预设名称不能超过 40 个字符")
+            raise ValueError("预设名称最多 40 个字符")
         if any(p["name"] == clean_name for p in self.presets):
-            raise ValueError("已有同名预设，请换一个名称")
+            raise ValueError("名称已被使用，请换一个名称")
         preset = {"id": uuid.uuid4().hex, "name": clean_name, "state": self._current_state()}
         self.presets.append(preset)
         self.save_state_to_disk()
@@ -378,15 +378,15 @@ class BleManager:
 
     async def _reconnect_loop(self):
         while self.auto_reconnect and not self.is_connected:
-            self.last_msg = "正在尝试自动重连..."
+            self.last_msg = "正在重新连接…"
             ok = await self.connect(self.device_address)
             if ok:
-                self.last_msg = f"已重连: {self.device_name}"
+                self.last_msg = f"已重新连接： {self.device_name}"
                 break
             await asyncio.sleep(4.0)
 
     async def scan_devices(self) -> List[Dict[str, Any]]:
-        self.last_msg = "正在扫描附近的神牛引闪器..."
+        self.last_msg = "正在扫描引闪器…"
         devs = await BleakScanner.discover(timeout=4.0)
         results = []
         for d in devs:
@@ -408,7 +408,7 @@ class BleManager:
                     "is_current": True
                 })
         self.discovered_devices = results
-        self.last_msg = f"扫描完成：发现 {len(results)} 台神牛引闪器" if results else "扫描完成：未发现神牛引闪器"
+        self.last_msg = f"扫描完成：发现 {len(results)} 台" if results else "未找到引闪器"
         return results
 
     async def connect(self, target_address: Optional[str] = None) -> bool:
@@ -429,7 +429,7 @@ class BleManager:
             if not addr:
                 devs = await self.scan_devices()
                 if not devs:
-                    self.last_msg = "未扫描到神牛引闪器设备"
+                    self.last_msg = "未找到引闪器"
                     return False
                 addr = devs[0]["address"]
                 self.device_name = devs[0]["name"]
@@ -439,7 +439,7 @@ class BleManager:
                 self.device_name = known["name"]
 
             self.device_address = addr
-            self.last_msg = f"正在连接 {addr}..."
+            self.last_msg = f"正在连接 {addr}…"
             self.battery_level = None
             self.battery_supported = None
             self.battery_state = "reading"
@@ -736,8 +736,8 @@ class BleManager:
 
     async def test_fire(self) -> Dict[str, Any]:
         if not self.is_connected or not self.client:
-            self.last_msg = "试闪失败：引闪器未连接"
-            return {"success": False, "detail": "引闪器未连接，请先点击“连接引闪器”"}
+            self.last_msg = "未能试闪：引闪器未连接"
+            return {"success": False, "detail": "请先连接引闪器，再试闪"}
         async with self._test_fire_lock:
             base_ms = 1483228800000
             diff_ms = int(time.time() * 1000) - base_ms
@@ -749,14 +749,14 @@ class BleManager:
             except Exception as e:
                 logger.error("Test fire write error: %s", e)
                 self.last_msg = f"试闪写入失败：{e}"
-                return {"success": False, "detail": "试闪指令写入失败，请重新连接后重试"}
+                return {"success": False, "detail": "试闪指令未发送，请重新连接后再试"}
             try:
                 await asyncio.wait_for(self._test_fire_ack_event.wait(), timeout=1.8)
             except asyncio.TimeoutError:
                 self.last_msg = "试闪未收到引闪器确认"
-                return {"success": False, "detail": "未收到引闪器确认，请检查蓝牙距离、连接状态和实体闪光灯"}
+                return {"success": False, "detail": "未收到确认，请检查距离、连接和闪光灯"}
             self.last_msg = "引闪器已确认试闪指令"
-            return {"success": True, "ack": self.last_test_fire_ack, "detail": "已收到引闪器确认；请观察实体闪光灯是否触发"}
+            return {"success": True, "ack": self.last_test_fire_ack, "detail": "引闪器已确认，请观察闪光灯是否闪光"}
 
     def get_status(self) -> Dict[str, Any]:
         return {

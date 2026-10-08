@@ -34,7 +34,7 @@ async def lifespan(application):
             await asyncio.wait_for(manager.disconnect(), timeout=2)
 
 
-app = FastAPI(title="Godox 引闪器桌面控制台", lifespan=lifespan)
+app = FastAPI(title="引闪控制台", lifespan=lifespan)
 
 
 class InstanceGuard:
@@ -48,7 +48,7 @@ class InstanceGuard:
             headers = dict(scope.get("headers", []))
             if headers.get(b"x-godox-instance") != INSTANCE_ID.encode():
                 from fastapi.responses import JSONResponse
-                response = JSONResponse(status_code=409, content={"detail": "此页面已过期，请从控制台重新打开。"})
+                response = JSONResponse(status_code=409, content={"detail": "页面已过期，请重新打开控制台。"})
                 await response(scope, receive, send)
                 return
         await self.app(scope, receive, send)
@@ -64,7 +64,7 @@ class ThemeRequest(BaseModel):
 @app.post("/api/theme")
 async def set_theme(req: ThemeRequest):
     if req.theme not in {"dark", "light", "system"}:
-        raise HTTPException(status_code=400, detail="不支持的外观主题")
+        raise HTTPException(status_code=400, detail="请选择可用的外观")
     save_theme(req.theme)
     return {"success": True}
 
@@ -171,7 +171,7 @@ async def remove_group(req: GroupManageRequest):
 @app.post("/api/set_channel")
 async def set_channel(req: ChannelRequest):
     if req.channel < 1 or req.channel > 32:
-        raise HTTPException(status_code=400, detail="频道范围必须在 1-32 之间")
+        raise HTTPException(status_code=400, detail="频道只能是 1 到 32")
     success = await manager.send_tc_command(channel=req.channel)
     return {"success": success, "status": manager.get_status()}
 
@@ -197,7 +197,7 @@ async def adjust_all(req: AdjustAllRequest):
 @app.post("/api/set_display_mode")
 async def set_display_mode(req: DisplayModeRequest):
     if req.mode not in {"fraction", "decimal", "dual"}:
-        raise HTTPException(status_code=400, detail="不支持的功率显示格式")
+        raise HTTPException(status_code=400, detail="请选择可用的功率格式")
     manager.set_display_mode(req.mode)
     return {"success": True, "status": manager.get_status()}
 
@@ -225,28 +225,28 @@ async def create_preset(req: PresetCreateRequest):
 @app.post("/api/presets/{preset_id}/apply")
 async def apply_preset(preset_id: str):
     if not manager.apply_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该预设")
+        raise HTTPException(status_code=404, detail="找不到这个预设")
     return {"success": True, "status": manager.get_status()}
 
 
 @app.post("/api/presets/{preset_id}/default")
 async def set_default_preset(preset_id: str):
     if not manager.set_default_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该预设")
+        raise HTTPException(status_code=404, detail="找不到这个预设")
     return {"success": True, "status": manager.get_status()}
 
 
 @app.post("/api/presets/apply_default")
 async def apply_default_preset():
     if not manager.apply_default_preset():
-        raise HTTPException(status_code=404, detail="尚未设定默认预设")
+        raise HTTPException(status_code=404, detail="还没有常用预设")
     return {"success": True, "status": manager.get_status()}
 
 
 @app.delete("/api/presets/{preset_id}")
 async def delete_preset(preset_id: str):
     if not manager.delete_preset(preset_id):
-        raise HTTPException(status_code=404, detail="未找到该预设")
+        raise HTTPException(status_code=404, detail="找不到这个预设")
     return {"success": True, "status": manager.get_status()}
 
 
@@ -266,10 +266,10 @@ async def toggle_all_off():
 async def all_off_form():
     result = await manager.toggle_all_off()
     success = result["success"]
-    message = "✓ 已恢复关闭前的全部组别设置" if result["action"] == "restored" else "✓ 已全部 OFF，已保存恢复点"
-    html = ("<!doctype html><meta charset=utf-8><title>OFF</title>"
+    message = "✓ 关闭前设置已发送" if result["action"] == "restored" else "✓ 面板内灯组已设为 OFF，可恢复"
+    html = ("<!doctype html><meta charset=utf-8><title>闪光开关</title>"
              "<body style='font-family:system-ui;background:#0d0f12;color:#fff;padding:40px;text-align:center'>"
-             "<h2>" + (message if success else "× 操作失败") + "</h2>"
+             "<h2>" + (message if success else "× 操作未成功") + "</h2>"
              "<a href='/' style='color:#e58e26'>← 返回</a></body>")
     return HTMLResponse(html)
 
@@ -283,9 +283,9 @@ async def sync_to_device():
 @app.post("/api/sync_to_device_form", response_class=HTMLResponse)
 async def sync_to_device_form():
     success = await manager.sync_all_to_device()
-    html = ("<!doctype html><meta charset=utf-8><title>Sync</title>"
+    html = ("<!doctype html><meta charset=utf-8><title>写入设置</title>"
              "<body style='font-family:system-ui;background:#0d0f12;color:#fff;padding:40px;text-align:center'>"
-             "<h2>" + ("✓ 桌面配置已写入实体引闪器（A~E 按桌面设置生效）" if success else "× 同步失败") + "</h2>"
+             "<h2>" + ("✓ 面板内灯组设置已发送" if success else "× 设置未发送") + "</h2>"
              "<a href='/' style='color:#e58e26'>← 返回</a></body>")
     return HTMLResponse(html)
 
@@ -332,4 +332,4 @@ async def serve_index():
                     .replace("__GODOX_THEME__", read_theme())
                     .replace("__GODOX_APP_VERSION__", html.escape(read_app_version())))
         return HTMLResponse(page, headers={"Cache-Control": "no-store, max-age=0", "Pragma": "no-cache"})
-    return HTMLResponse("<h1>Godox 引闪器桌面控制台</h1><p>请配置 static/index.html</p>")
+    return HTMLResponse("<h1>引闪控制台</h1><p>缺少界面文件：static/index.html</p>")
